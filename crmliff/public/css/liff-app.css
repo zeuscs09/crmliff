@@ -18,6 +18,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-bottom: 80px; /* Space for navigation buttons */
 }
 
 /* ===== UTILITY CLASSES ===== */
@@ -209,17 +210,17 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 40px;
 }
 
 .profile-section {
     text-align: center;
-    margin-bottom: 40px;
 }
 
 .profile-avatar {
     font-size: 80px;
     color: #667eea;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .profile-section h2 {
@@ -230,52 +231,56 @@ body {
 
 .verification-form {
     background: white;
-    padding: 30px 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 30px 25px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
 .verification-form h3 {
     font-size: 18px;
-    margin-bottom: 10px;
     color: #333;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 .verification-form p {
-    font-size: 14px;
     color: #666;
-    margin-bottom: 25px;
     text-align: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* ===== MAIN CONTENT ===== */
 .main-content {
     flex: 1;
     padding: 20px;
-    padding-bottom: 40px;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .section {
     background: white;
-    margin-bottom: 20px;
-    padding: 20px;
     border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .section h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 15px;
+    font-size: 18px;
     color: #333;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     gap: 10px;
+    font-weight: 600;
 }
 
 .section h3 i {
     color: #667eea;
+    font-size: 18px;
 }
 
 /* ===== FORM ELEMENTS ===== */
@@ -285,27 +290,29 @@ body {
 
 .form-group label {
     display: block;
-    font-size: 14px;
     font-weight: 500;
     color: #333;
     margin-bottom: 8px;
+    font-size: 14px;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #e1e5e9;
+    border: 2px solid #e0e6ed;
     border-radius: 10px;
     font-size: 14px;
-    font-family: inherit;
+    font-family: 'Prompt', sans-serif;
     transition: border-color 0.3s ease;
+    background: #fafbfc;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: #667eea;
+    background: white;
 }
 
 .form-group textarea {
@@ -315,20 +322,20 @@ body {
 
 /* ===== BUTTONS ===== */
 .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.3s ease;
     text-decoration: none;
-    outline: none;
+    font-family: 'Prompt', sans-serif;
+    min-height: 45px;
 }
 
 .btn-primary {
@@ -339,44 +346,45 @@ body {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e0e6ed;
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
-    transform: translateY(-1px);
+    background: #e9ecef;
+    border-color: #ced4da;
 }
 
 .btn-photo {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     width: 100%;
-    padding: 15px;
+    padding: 15px 20px;
     font-size: 16px;
 }
 
 .btn-photo:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn-submit {
-    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     width: 100%;
-    padding: 15px;
+    padding: 15px 20px;
     font-size: 16px;
-    font-weight: 600;
+    margin-top: 20px;
 }
 
 .btn-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
 }
 
 .btn-icon {
@@ -390,11 +398,13 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 16px;
 }
 
 .btn-icon:hover {
     background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
 /* ===== PHOTO CAPTURE ===== */
@@ -403,57 +413,53 @@ body {
 }
 
 .photo-preview {
-    margin-bottom: 20px;
-}
-
-.photo-preview img {
-    width: 100%;
-    max-width: 300px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     margin-bottom: 15px;
 }
 
-/* ===== STORE TYPE SLIDER ===== */
+.photo-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+}
+
+/* ===== STORE TYPE SELECTION ===== */
 .store-type-slider {
     overflow-x: auto;
-    margin: -5px;
-    padding: 5px;
+    padding-bottom: 10px;
+    margin: 0 -5px;
 }
 
 .slider-container {
     display: flex;
     gap: 15px;
-    padding: 10px 0;
+    padding: 0 5px;
     min-width: max-content;
 }
 
 .store-type-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
+    background: white;
+    border: 2px solid #e0e6ed;
     border-radius: 15px;
-    background: #f8f9fa;
-    border: 2px solid transparent;
+    padding: 15px;
+    text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 80px;
+    min-width: 100px;
     flex-shrink: 0;
 }
 
 .store-type-item.active {
-    background: #e3f2fd;
     border-color: #667eea;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #667eea 10%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
 }
 
 .store-type-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+    transform: translateY(-1px);
 }
 
 .store-type-icon {
@@ -463,21 +469,21 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto 10px;
     font-size: 24px;
-    color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: #f8f9fa;
 }
 
 .store-type-item span {
     font-size: 12px;
     font-weight: 500;
-    text-align: center;
-    line-height: 1.3;
+    display: block;
+    white-space: nowrap;
 }
 
 /* ===== SUBMIT SECTION ===== */
 .submit-section {
-    margin-top: 30px;
+    padding: 20px 0;
 }
 
 /* ===== SUCCESS SCREEN ===== */
@@ -489,34 +495,38 @@ body {
     justify-content: center;
     padding: 40px 20px;
     text-align: center;
+    background: white;
+    margin: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
 .success-icon {
     font-size: 80px;
-    color: #00b894;
-    margin-bottom: 30px;
+    color: #28a745;
+    margin-bottom: 20px;
 }
 
 .success-content h2 {
     font-size: 24px;
     color: #333;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .success-content p {
-    font-size: 16px;
     color: #666;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    font-size: 16px;
     line-height: 1.5;
 }
 
-/* ===== MODAL ===== */
+/* ===== ERROR MODAL ===== */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
@@ -528,16 +538,15 @@ body {
 .modal-content {
     background: white;
     border-radius: 15px;
-    width: 100%;
     max-width: 400px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-out;
 }
 
 .modal-header {
-    background: #ff6b6b;
-    color: white;
-    padding: 20px;
+    padding: 20px 20px 15px;
+    border-bottom: 1px solid #e0e6ed;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -545,34 +554,39 @@ body {
 
 .modal-header h3 {
     font-size: 18px;
-    font-weight: 600;
+    color: #dc3545;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .btn-close {
     background: none;
     border: none;
-    color: white;
-    font-size: 24px;
+    font-size: 20px;
+    color: #999;
     cursor: pointer;
     width: 30px;
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
 }
 
 .modal-body {
-    padding: 30px 20px;
+    padding: 20px;
 }
 
 .modal-body p {
-    font-size: 16px;
-    color: #333;
+    color: #666;
     line-height: 1.5;
+    margin: 0;
 }
 
 .modal-footer {
-    padding: 0 20px 20px;
+    padding: 15px 20px 20px;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -595,7 +609,7 @@ body {
     }
     
     .verification-form {
-        padding: 25px 15px;
+        padding: 25px 20px;
     }
     
     .slider-container {
@@ -603,13 +617,13 @@ body {
     }
     
     .store-type-item {
-        min-width: 70px;
+        min-width: 80px;
         padding: 12px;
     }
     
     .store-type-icon {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
         font-size: 20px;
     }
     
@@ -629,46 +643,47 @@ body {
 
 /* ===== SCROLLBAR STYLING ===== */
 .store-type-slider::-webkit-scrollbar {
-    height: 4px;
+    height: 6px;
 }
 
 .store-type-slider::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .store-type-slider::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 2px;
+    background: #c1c1c1;
+    border-radius: 3px;
 }
 
 .store-type-slider::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    background: #a1a1a1;
 }
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: scale(0.9);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
     }
 }
 
 .section {
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.3s ease-out;
 }
 
-/* ===== SAFE AREA SUPPORT (iPhone X+) ===== */
+/* ===== iPhone X/XS/11 Pro SPECIFIC ===== */
 @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
     body {
-        padding-bottom: env(safe-area-inset-bottom);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
     }
     
     .main-content {
-        padding-bottom: calc(40px + env(safe-area-inset-bottom));
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
 } 

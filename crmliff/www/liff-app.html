@@ -21,6 +21,308 @@
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Progress Bar Styles */
+        .progress-container {
+            background: white;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+        
+        .progress-step.completed::after {
+            background: #4CAF50;
+        }
+        
+        .progress-step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .progress-step.active .progress-step-circle {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .progress-step.completed .progress-step-circle {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .progress-step-label {
+            font-size: 10px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .progress-step.active .progress-step-label {
+            color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .progress-step.completed .progress-step-label {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        
+        /* Step Content Styles */
+        .step-content {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .step-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .step-title h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .step-title p {
+            margin: 0;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        /* Navigation Buttons */
+        .step-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-nav {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-nav.btn-prev {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn-nav.btn-next {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-nav:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Map specific styles for step 1 */
+        .map-step-container {
+            height: 60vh;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .location-info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .location-info-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .location-info-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .location-accuracy {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .accuracy-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .accuracy-high { background: #4CAF50; }
+        .accuracy-medium { background: #FF9800; }
+        .accuracy-low { background: #F44336; }
+        
+        /* Photo section styles for step 2 */
+        .photo-section {
+            text-align: center;
+        }
+        
+        .photo-capture-container {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-capture-container.has-photo {
+            border-style: solid;
+            border-color: #4CAF50;
+            background: #f8fff8;
+        }
+        
+        .photo-preview-large {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        /* Store type selection for step 2 */
+        .store-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .store-type-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .store-type-card.selected {
+            border-color: #2196F3;
+            background: #f3f8ff;
+        }
+        
+        .store-type-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .store-type-card .name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Confirm step styles */
+        .confirm-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .confirm-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .confirm-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .confirm-item:last-child {
+            border-bottom: none;
+        }
+        
+        .confirm-item .label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .confirm-item .value {
+            color: #333;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+        
+        .confirm-photo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -60,121 +362,197 @@
         </div>
     </div>
 
-    <!-- Main App Screen -->
+    <!-- Main App Screen with Steps -->
     <div id="main-screen" class="screen hidden">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                <div class="user-info">
-                    <h1>สวัสดีคุณ <span id="agent-name">พนักงานเซลส์</span></h1>
-                    <div class="location-info">
-                        <p><i class="fas fa-map-marker-alt"></i> <span id="location-display">กำลังหาตำแหน่ง...</span></p>
-                        <button id="toggle-map-btn" class="btn-map-toggle hidden">
-                            <i class="fas fa-map"></i> แสดงแผนที่
-                        </button>
-                    </div>
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">
+                    <div class="progress-step-circle">1</div>
+                    <div class="progress-step-label">ตำแหน่ง</div>
                 </div>
-                <button id="logout-btn" class="btn-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-            
-            <!-- Map Container -->
-            <div id="map-container" class="map-container hidden">
-                <div class="map-header">
-                    <h4><i class="fas fa-map-marker-alt"></i> ตำแหน่งปัจจุบัน</h4>
-                    <button id="close-map-btn" class="btn-close-map">
-                        <i class="fas fa-times"></i>
-                    </button>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-step-circle">2</div>
+                    <div class="progress-step-label">รูปภาพ</div>
                 </div>
-                <div id="map" class="map"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-step-circle">3</div>
+                    <div class="progress-step-label">ข้อมูล</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="progress-step-circle">4</div>
+                    <div class="progress-step-label">ยืนยัน</div>
+                </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Photo Section -->
-            <div class="section">
+        <!-- Step 1: Location -->
+        <div id="step-1" class="step-content active">
+            <div class="step-title">
+                <h2><i class="fas fa-map-marker-alt"></i> ตำแหน่งที่ตั้ง</h2>
+                <p>ตรวจสอบตำแหน่งปัจจุบันของคุณ</p>
+            </div>
+            
+            <div class="location-info-card">
+                <h3><i class="fas fa-location-arrow"></i> ตำแหน่งปัจจุบัน</h3>
+                <p id="current-address">กำลังหาตำแหน่ง...</p>
+                <p><strong>พิกัด:</strong> <span id="current-coordinates">-</span></p>
+                <div class="location-accuracy">
+                    <div id="accuracy-dot" class="accuracy-dot accuracy-medium"></div>
+                    <span id="accuracy-text">ความแม่นยำ: ปานกลาง</span>
+                </div>
+            </div>
+            
+            <div class="map-step-container">
+                <div id="step1-map" class="map"></div>
+            </div>
+        </div>
+
+        <!-- Step 2: Photo and Store Type -->
+        <div id="step-2" class="step-content">
+            <div class="step-title">
+                <h2><i class="fas fa-camera"></i> รูปภาพและประเภทร้าน</h2>
+                <p>ถ่ายรูปหน้าร้านและเลือกประเภทร้าน</p>
+            </div>
+            
+            <div class="photo-section">
                 <h3><i class="fas fa-camera"></i> ถ่ายรูปหน้าร้าน</h3>
-                <div class="photo-capture">
+                <div class="photo-capture-container" id="photo-capture-container">
                     <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
-                    <div id="photo-preview" class="photo-preview hidden">
-                        <img id="preview-image" src="" alt="Preview">
-                        <button id="retake-btn" class="btn btn-secondary">
-                            <i class="fas fa-redo"></i> ถ่ายใหม่
+                    <div id="photo-preview-step2" class="hidden">
+                        <img id="preview-image-step2" class="photo-preview-large" src="" alt="Preview">
+                        <div>
+                            <button id="retake-btn-step2" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> ถ่ายใหม่
+                            </button>
+                        </div>
+                    </div>
+                    <div id="photo-capture-prompt">
+                        <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                        <p style="color: #666; margin-bottom: 20px;">คลิกเพื่อถ่ายรูปหน้าร้าน</p>
+                        <button id="take-photo-btn-step2" class="btn btn-photo">
+                            <i class="fas fa-camera"></i> ถ่ายรูป
                         </button>
                     </div>
-                    <button id="take-photo-btn" class="btn btn-photo">
-                        <i class="fas fa-camera"></i> ถ่ายรูป
-                    </button>
                 </div>
             </div>
 
-            <!-- Store Type Section -->
-            <div class="section">
-                <h3><i class="fas fa-store"></i> ประเภทร้าน</h3>
-                <div class="store-type-slider">
-                    <div class="slider-container" id="store-type-container">
-                        <!-- Mock Store Types -->
-                        <div class="store-type-item active" data-type="food">
-                            <div class="store-type-icon" style="background-color: #FF6B6B;">🍽️</div>
-                            <span>ร้านอาหาร</span>
-                        </div>
-                        <div class="store-type-item" data-type="retail">
-                            <div class="store-type-icon" style="background-color: #4ECDC4;">🏪</div>
-                            <span>ร้านค้าปลีก</span>
-                        </div>
-                        <div class="store-type-item" data-type="grocery">
-                            <div class="store-type-icon" style="background-color: #45B7D1;">🛒</div>
-                            <span>ร้านโชห่วย</span>
-                        </div>
-                        <div class="store-type-item" data-type="drink">
-                            <div class="store-type-icon" style="background-color: #96CEB4;">☕</div>
-                            <span>ร้านเครื่องดื่ม</span>
-                        </div>
-                        <div class="store-type-item" data-type="convenience">
-                            <div class="store-type-icon" style="background-color: #FECA57;">🏬</div>
-                            <span>ร้านสะดวกซื้อ</span>
-                        </div>
-                        <div class="store-type-item" data-type="pharmacy">
-                            <div class="store-type-icon" style="background-color: #FF9FF3;">💊</div>
-                            <span>ร้านยา</span>
-                        </div>
-                        <div class="store-type-item" data-type="other">
-                            <div class="store-type-icon" style="background-color: #95A5A6;">❓</div>
-                            <span>อื่นๆ</span>
-                        </div>
+            <div class="store-type-section">
+                <h3><i class="fas fa-store"></i> เลือกประเภทร้าน</h3>
+                <div class="store-type-grid" id="store-type-grid">
+                    <div class="store-type-card" data-type="food">
+                        <div class="icon">🍽️</div>
+                        <div class="name">ร้านอาหาร</div>
+                    </div>
+                    <div class="store-type-card" data-type="retail">
+                        <div class="icon">🏪</div>
+                        <div class="name">ร้านค้าปลีก</div>
+                    </div>
+                    <div class="store-type-card" data-type="grocery">
+                        <div class="icon">🛒</div>
+                        <div class="name">ร้านโชห่วย</div>
+                    </div>
+                    <div class="store-type-card" data-type="drink">
+                        <div class="icon">☕</div>
+                        <div class="name">ร้านเครื่องดื่ม</div>
+                    </div>
+                    <div class="store-type-card" data-type="convenience">
+                        <div class="icon">🏬</div>
+                        <div class="name">ร้านสะดวกซื้อ</div>
+                    </div>
+                    <div class="store-type-card" data-type="pharmacy">
+                        <div class="icon">💊</div>
+                        <div class="name">ร้านยา</div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Store Information -->
-            <div class="section">
-                <h3><i class="fas fa-info-circle"></i> ข้อมูลร้าน (ไม่บังคับ)</h3>
-                <div class="form-group">
-                    <label for="store-name">ชื่อร้าน</label>
-                    <input type="text" id="store-name" placeholder="เช่น ร้านแม่สมศรี">
+        <!-- Step 3: Information -->
+        <div id="step-3" class="step-content">
+            <div class="step-title">
+                <h2><i class="fas fa-info-circle"></i> ข้อมูลร้าน</h2>
+                <p>กรอกข้อมูลเพิ่มเติมของร้าน (ไม่บังคับ)</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="store-name-step3">ชื่อร้าน</label>
+                <input type="text" id="store-name-step3" placeholder="เช่น ร้านแม่สมศรี">
+            </div>
+            <div class="form-group">
+                <label for="contact-name-step3">ชื่อผู้ติดต่อ</label>
+                <input type="text" id="contact-name-step3" placeholder="เช่น คุณสมศรี">
+            </div>
+            <div class="form-group">
+                <label for="contact-phone-step3">เบอร์โทร</label>
+                <input type="tel" id="contact-phone-step3" placeholder="เช่น 089-123-4567">
+            </div>
+            <div class="form-group">
+                <label for="store-description-step3">ข้อความเพิ่มเติม</label>
+                <textarea id="store-description-step3" placeholder="เช่น อยู่ริมถนน ใกล้เซเว่น" rows="4"></textarea>
+            </div>
+        </div>
+
+        <!-- Step 4: Confirm -->
+        <div id="step-4" class="step-content">
+            <div class="step-title">
+                <h2><i class="fas fa-check-circle"></i> ตรวจสอบข้อมูล</h2>
+                <p>กรุณาตรวจสอบข้อมูลก่อนบันทึก</p>
+            </div>
+            
+            <div class="confirm-section">
+                <h3><i class="fas fa-map-marker-alt"></i> ตำแหน่งที่ตั้ง</h3>
+                <div class="confirm-item">
+                    <span class="label">ที่อยู่:</span>
+                    <span class="value" id="confirm-address">-</span>
                 </div>
-                <div class="form-group">
-                    <label for="contact-name">ชื่อผู้ติดต่อ</label>
-                    <input type="text" id="contact-name" placeholder="เช่น คุณสมศรี">
-                </div>
-                <div class="form-group">
-                    <label for="contact-phone">เบอร์โทร</label>
-                    <input type="tel" id="contact-phone" placeholder="เช่น 089-123-4567">
-                </div>
-                <div class="form-group">
-                    <label for="store-description">ข้อความเพิ่มเติม</label>
-                    <textarea id="store-description" placeholder="เช่น อยู่ริมถนน ใกล้เซเว่น"></textarea>
+                <div class="confirm-item">
+                    <span class="label">พิกัด:</span>
+                    <span class="value" id="confirm-coordinates">-</span>
                 </div>
             </div>
 
-            <!-- Submit Button -->
-            <div class="submit-section">
-                <button id="submit-btn" class="btn btn-submit">
-                    <i class="fas fa-save"></i> บันทึกข้อมูล
-                </button>
+            <div class="confirm-section">
+                <h3><i class="fas fa-camera"></i> รูปภาพและประเภท</h3>
+                <div class="confirm-item">
+                    <span class="label">รูปภาพ:</span>
+                    <img id="confirm-photo" class="confirm-photo" src="" alt="ไม่มีรูปภาพ">
+                </div>
+                <div class="confirm-item">
+                    <span class="label">ประเภทร้าน:</span>
+                    <span class="value" id="confirm-store-type">-</span>
+                </div>
             </div>
+
+            <div class="confirm-section">
+                <h3><i class="fas fa-info-circle"></i> ข้อมูลร้าน</h3>
+                <div class="confirm-item">
+                    <span class="label">ชื่อร้าน:</span>
+                    <span class="value" id="confirm-store-name">-</span>
+                </div>
+                <div class="confirm-item">
+                    <span class="label">ผู้ติดต่อ:</span>
+                    <span class="value" id="confirm-contact-name">-</span>
+                </div>
+                <div class="confirm-item">
+                    <span class="label">เบอร์โทร:</span>
+                    <span class="value" id="confirm-contact-phone">-</span>
+                </div>
+                <div class="confirm-item">
+                    <span class="label">หมายเหตุ:</span>
+                    <span class="value" id="confirm-description">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="step-navigation">
+            <button id="prev-btn" class="btn-nav btn-prev" disabled>
+                <i class="fas fa-chevron-left"></i> ก่อนหน้า
+            </button>
+            <button id="next-btn" class="btn-nav btn-next">
+                ถัดไป <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 
