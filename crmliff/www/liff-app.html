@@ -104,8 +104,11 @@
         /* Step Content Styles */
         .step-content {
             display: none;
-            padding: 20px;
-            min-height: calc(100vh - 200px);
+            padding: 20px 20px 120px 20px; /* Extra bottom padding for navigation */
+            min-height: calc(100vh - 180px);
+            max-width: 500px;
+            margin: 0 auto;
+            overflow-y: auto;
         }
         
         .step-content.active {
@@ -138,9 +141,11 @@
             right: 0;
             background: white;
             padding: 15px 20px;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
             display: flex;
             gap: 10px;
+            z-index: 1000;
         }
         
         .btn-nav {
@@ -171,7 +176,9 @@
         
         /* Map specific styles for step 1 */
         .map-step-container {
-            height: 60vh;
+            height: 50vh;
+            max-height: 400px;
+            min-height: 250px;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -322,6 +329,45 @@
             object-fit: cover;
             border-radius: 8px;
         }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .step-content {
+                padding: 15px 15px 130px 15px;
+                min-height: calc(100vh - 160px);
+            }
+            
+            .step-title h2 {
+                font-size: 20px;
+            }
+            
+            .step-title p {
+                font-size: 14px;
+            }
+            
+            .map-step-container {
+                height: 45vh;
+                max-height: 300px;
+                min-height: 200px;
+            }
+            
+            .step-navigation {
+                padding: 12px 15px;
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+            
+            .btn-nav {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+        
+        /* iPhone X/XS/11 Pro and similar */
+        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+            .step-content {
+                padding-bottom: calc(120px + env(safe-area-inset-bottom));
+            }
+        }
     </style>
 </head>
 <body>
@@ -410,7 +456,10 @@
 
         <!-- Step 2: Photo and Store Type -->
         <div id="step-2" class="step-content">
-           
+            <div class="step-title">
+                <h2><i class="fas fa-camera"></i> รูปภาพและประเภทร้าน</h2>
+                <p>ถ่ายรูปหน้าร้านและเลือกประเภทร้าน</p>
+            </div>
             
             <div class="photo-section">
                 <h3><i class="fas fa-camera"></i> ถ่ายรูปหน้าร้าน</h3>
@@ -587,6 +636,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- JavaScript -->
-    <script src="/assets/crmliff/js/liff-app.js?v=1.0.0"></script>
+    <script src="/assets/crmliff/js/liff-app.js?v=1.0.1"></script>
 </body>
 </html> 

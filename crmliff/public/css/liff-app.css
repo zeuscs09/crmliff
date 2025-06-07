@@ -18,7 +18,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-bottom: 80px; /* Space for navigation buttons */
+    padding-bottom: 100px; /* Space for navigation buttons */
 }
 
 /* ===== UTILITY CLASSES ===== */
@@ -680,7 +680,7 @@ body {
 @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
     body {
         padding-top: env(safe-area-inset-top);
-        padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 100px);
     }
     
     .main-content {
