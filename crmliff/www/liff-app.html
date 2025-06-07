@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bangbow Sales Kit - เก็บข้อมูลร้านค้า</title>
+    
+    <!-- LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/crmliff/css/liff-app.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>กำลังโหลด...</p>
+        </div>
+    </div>
+
+    <!-- Login/Verification Screen -->
+    <div id="login-screen" class="screen hidden">
+        <div class="header">
+            <h1><i class="fas fa-store"></i> Bangbow Sales Kit</h1>
+            <p>ระบบเก็บข้อมูลร้านค้า</p>
+        </div>
+        
+        <div class="login-content">
+            <div class="profile-section">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="user-name">กำลังโหลดข้อมูล...</h2>
+            </div>
+            
+            <div class="verification-form">
+                <h3>ยืนยันตัวตน</h3>
+                <p>กรุณากรอกรหัสพนักงานเซลส์ของคุณ</p>
+                <div class="form-group">
+                    <label for="agent-code">รหัสพนักงานเซลส์</label>
+                    <input type="text" id="agent-code" placeholder="เช่น S001, S002">
+                </div>
+                <button id="verify-btn" class="btn btn-primary">
+                    <i class="fas fa-check"></i> ยืนยันตัวตน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="main-screen" class="screen hidden">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="user-info">
+                    <h1>สวัสดีคุณ <span id="agent-name">พนักงานเซลส์</span></h1>
+                    <div class="location-info">
+                        <p><i class="fas fa-map-marker-alt"></i> <span id="location-display">กำลังหาตำแหน่ง...</span></p>
+                        <button id="toggle-map-btn" class="btn-map-toggle hidden">
+                            <i class="fas fa-map"></i> แสดงแผนที่
+                        </button>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+            
+            <!-- Map Container -->
+            <div id="map-container" class="map-container hidden">
+                <div class="map-header">
+                    <h4><i class="fas fa-map-marker-alt"></i> ตำแหน่งปัจจุบัน</h4>
+                    <button id="close-map-btn" class="btn-close-map">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="map" class="map"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Photo Section -->
+            <div class="section">
+                <h3><i class="fas fa-camera"></i> ถ่ายรูปหน้าร้าน</h3>
+                <div class="photo-capture">
+                    <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
+                    <div id="photo-preview" class="photo-preview hidden">
+                        <img id="preview-image" src="" alt="Preview">
+                        <button id="retake-btn" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> ถ่ายใหม่
+                        </button>
+                    </div>
+                    <button id="take-photo-btn" class="btn btn-photo">
+                        <i class="fas fa-camera"></i> ถ่ายรูป
+                    </button>
+                </div>
+            </div>
+
+            <!-- Store Type Section -->
+            <div class="section">
+                <h3><i class="fas fa-store"></i> ประเภทร้าน</h3>
+                <div class="store-type-slider">
+                    <div class="slider-container" id="store-type-container">
+                        <!-- Mock Store Types -->
+                        <div class="store-type-item active" data-type="food">
+                            <div class="store-type-icon" style="background-color: #FF6B6B;">🍽️</div>
+                            <span>ร้านอาหาร</span>
+                        </div>
+                        <div class="store-type-item" data-type="retail">
+                            <div class="store-type-icon" style="background-color: #4ECDC4;">🏪</div>
+                            <span>ร้านค้าปลีก</span>
+                        </div>
+                        <div class="store-type-item" data-type="grocery">
+                            <div class="store-type-icon" style="background-color: #45B7D1;">🛒</div>
+                            <span>ร้านโชห่วย</span>
+                        </div>
+                        <div class="store-type-item" data-type="drink">
+                            <div class="store-type-icon" style="background-color: #96CEB4;">☕</div>
+                            <span>ร้านเครื่องดื่ม</span>
+                        </div>
+                        <div class="store-type-item" data-type="convenience">
+                            <div class="store-type-icon" style="background-color: #FECA57;">🏬</div>
+                            <span>ร้านสะดวกซื้อ</span>
+                        </div>
+                        <div class="store-type-item" data-type="pharmacy">
+                            <div class="store-type-icon" style="background-color: #FF9FF3;">💊</div>
+                            <span>ร้านยา</span>
+                        </div>
+                        <div class="store-type-item" data-type="other">
+                            <div class="store-type-icon" style="background-color: #95A5A6;">❓</div>
+                            <span>อื่นๆ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Information -->
+            <div class="section">
+                <h3><i class="fas fa-info-circle"></i> ข้อมูลร้าน (ไม่บังคับ)</h3>
+                <div class="form-group">
+                    <label for="store-name">ชื่อร้าน</label>
+                    <input type="text" id="store-name" placeholder="เช่น ร้านแม่สมศรี">
+                </div>
+                <div class="form-group">
+                    <label for="contact-name">ชื่อผู้ติดต่อ</label>
+                    <input type="text" id="contact-name" placeholder="เช่น คุณสมศรี">
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">เบอร์โทร</label>
+                    <input type="tel" id="contact-phone" placeholder="เช่น 089-123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="store-description">ข้อความเพิ่มเติม</label>
+                    <textarea id="store-description" placeholder="เช่น อยู่ริมถนน ใกล้เซเว่น"></textarea>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="submit-section">
+                <button id="submit-btn" class="btn btn-submit">
+                    <i class="fas fa-save"></i> บันทึกข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div id="success-screen" class="screen hidden">
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>บันทึกสำเร็จ!</h2>
+            <p>ข้อมูลร้านค้าได้ถูกบันทึกเรียบร้อยแล้ว</p>
+            <button id="new-visit-btn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> เก็บข้อมูลร้านใหม่
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> ข้อผิดพลาด</h3>
+                <button id="close-error" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</p>
+            </div>
+            <div class="modal-footer">
+                <button id="error-ok-btn" class="btn btn-primary">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- JavaScript -->
+    <script src="/assets/crmliff/js/liff-app.js"></script>
+</body>
+</html> 

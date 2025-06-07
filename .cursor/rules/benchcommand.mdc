@@ -1,0 +1,8 @@
+---
+description: เรียก bench
+globs: 
+alwaysApply: false
+---
+docker exec -it 58f3c038df38 /bin/bash
+
+cd frappe-bench/
