@@ -649,6 +649,55 @@ def health_check():
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
+def upload_photo():
+    """
+    API: POST /api/method/crmliff.api.liff_api.upload_photo
+    Custom photo upload for LIFF with better production support
+    """
+    try:
+        # Get uploaded file
+        files = frappe.request.files
+        if not files or 'file' not in files:
+            frappe.throw("No file uploaded")
+        
+        file = files['file']
+        
+        # Validate file
+        if not file.filename:
+            frappe.throw("Invalid file")
+        
+        # Create file doc
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": file.filename,
+            "is_private": 0,
+            "attached_to_doctype": "CLIFF Store",
+            "attached_to_name": "temp"
+        })
+        
+        # Save file content
+        file_doc.save_file(file.read(), file.filename)
+        file_doc.insert(ignore_permissions=True)
+        
+        return {
+            "success": True,
+            "message": {
+                "file_url": file_doc.file_url,
+                "file_name": file_doc.file_name,
+                "name": file_doc.name
+            }
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error uploading photo: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to upload photo"
+        }
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def log_debug():
     """
     API: POST /api/method/crmliff.api.liff_api.log_debug

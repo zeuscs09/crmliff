@@ -1214,17 +1214,25 @@ async function uploadPhoto(file) {
         formData.append('file', file);
         formData.append('doctype', 'CLIFF Store');
         formData.append('docname', 'temp');
+        formData.append('is_private', '0'); // Make file public
+        formData.append('attached_to_doctype', 'CLIFF Store');
+        formData.append('attached_to_name', 'temp');
 
         const csrfToken = await CRMLIFFCommon.getCSRFToken();
+        console.log('🔐 Using CSRF token:', csrfToken ? 'Available' : 'Missing');
         
         // Add timeout for photo upload
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for upload
         
-        const response = await fetch('/api/method/upload_file', {
+        console.log('📤 Sending upload request to /api/method/upload_file');
+        
+        // Try upload with authentication first
+        let response = await fetch('/api/method/upload_file', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': csrfToken,
+                'Accept': 'application/json'
             },
             body: formData,
             signal: controller.signal
@@ -1232,23 +1240,72 @@ async function uploadPhoto(file) {
 
         clearTimeout(timeoutId);
 
-        console.log('📤 Upload response status:', response.status);
+        console.log('📤 Upload response:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (response.status === 403) {
+            console.log('🔄 403 error, trying alternative upload method...');
+            
+            // Try alternative upload through our custom API
+            try {
+                clearTimeout(timeoutId);
+                const altTimeoutId = setTimeout(() => controller.abort(), 60000);
+                
+                response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
+                    method: 'POST',
+                    headers: {
+                        'X-Frappe-CSRF-Token': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: formData,
+                    signal: controller.signal
+                });
+                
+                clearTimeout(altTimeoutId);
+                console.log('📤 Alternative upload response:', response.status);
+                
+            } catch (altError) {
+                console.error('❌ Alternative upload also failed:', altError);
+                throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ');
+            }
+        }
         
         if (response.status === 413) {
             throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
         }
         
         if (!response.ok) {
-            throw new Error(`Upload failed: HTTP ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ Upload HTTP Error:', response.status, errorText);
+            throw new Error(`Upload failed: HTTP ${response.status} - ${errorText}`);
         }
 
         const result = await response.json();
         console.log('📤 Upload result:', result);
         
-        if (result.message && result.message.file_url) {
-            console.log('✅ Photo uploaded successfully:', result.message.file_url);
+        // Handle different response formats
+        if (result.success && result.message && result.message.file_url) {
+            // Custom API response format
+            console.log('✅ Photo uploaded successfully (custom API):', result.message.file_url);
             return result.message.file_url;
+        } else if (result.message && result.message.file_url) {
+            // Standard Frappe upload response
+            console.log('✅ Photo uploaded successfully (standard):', result.message.file_url);
+            return result.message.file_url;
+        } else if (result.message && result.message.name) {
+            // Sometimes Frappe returns file name instead of URL
+            const fileUrl = `/files/${result.message.name}`;
+            console.log('✅ Photo uploaded, constructed URL:', fileUrl);
+            return fileUrl;
+        } else if (result.success === false) {
+            // Error from custom API
+            console.error('❌ Upload failed (custom API):', result.error);
+            throw new Error(result.message || result.error || 'Upload failed');
         } else {
+            console.error('❌ Invalid upload response:', result);
             throw new Error('Upload failed: Invalid response format');
         }
         
@@ -1258,6 +1315,8 @@ async function uploadPhoto(file) {
         // More specific error messages
         if (error.name === 'AbortError') {
             throw new Error('การอัปโหลดรูปภาพใช้เวลานานเกินไป กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่');
+        } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+            throw new Error('ไม่มีสิทธิ์ในการอัปโหลดไฟล์ กรุณาล็อกอินใหม่หรือติดต่อผู้ดูแลระบบ');
         } else if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
             throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
         } else if (error.message.includes('Failed to fetch')) {
