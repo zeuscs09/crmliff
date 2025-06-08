@@ -118,32 +118,7 @@ window.CRMLIFFCommon = {
         }
     },
 
-    // Smart agent verification - check LINE UID first, then verify code if needed
-    async smartVerifyAgent(agentCode, lineUID) {
-        try {
-            // Step 1: Try to get agent by LINE UID first
-            if (lineUID) {
-                console.log('🔍 Checking existing LINE UID...');
-                const existingAgent = await this.getAgentByLineUID(lineUID);
-                if (existingAgent) {
-                    console.log('✅ Found existing agent by LINE UID');
-                    return existingAgent;
-                }
-            }
 
-            // Step 2: If not found, verify with agent code and link
-            if (!agentCode) {
-                throw new Error('กรุณากรอกรหัสพนักงานเซลส์');
-            }
-
-            console.log('🔐 Verifying agent code and linking...');
-            return await this.verifyAndLinkAgent(agentCode, lineUID);
-
-        } catch (error) {
-            console.error('Smart verification error:', error);
-            throw error;
-        }
-    },
 
     // Show Error Modal
     showError(message) {
@@ -255,5 +230,29 @@ window.CRMLIFFCommon = {
         if (element) {
             element.classList.add('hidden');
         }
+    },
+
+    // Agent persistence across pages
+    setCurrentAgent(agent) {
+        localStorage.setItem('crmliff_current_agent', JSON.stringify(agent));
+    },
+
+    getCurrentAgent() {
+        try {
+            const stored = localStorage.getItem('crmliff_current_agent');
+            return stored ? JSON.parse(stored) : null;
+        } catch (error) {
+            console.warn('Error getting stored agent:', error);
+            return null;
+        }
+    },
+
+    // Navigation helpers
+    goToListStore() {
+        window.location.href = '/list-store';
+    },
+
+    goToCreateStore() {
+        window.location.href = '/liff-app';
     }
 }; 

@@ -133,6 +133,9 @@ async function initializeLiff() {
                 agentDoc: existingAgent.name
             };
             
+            // Store agent for cross-page use
+            CRMLIFFCommon.setCurrentAgent(existingAgent);
+            
             showScreen('main');
             currentStep = 1;
             showStep(currentStep);
@@ -555,8 +558,8 @@ async function handleVerification() {
         elements.verifyBtn.disabled = true;
         elements.verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
 
-        // Use smart verification (check LINE UID first, then verify code)
-        const agent = await CRMLIFFCommon.smartVerifyAgent(agentCode, currentUser.userId);
+        // Verify agent code and link with LINE UID
+        const agent = await CRMLIFFCommon.verifyAndLinkAgent(agentCode, currentUser.userId);
         console.log('✅ Verification successful:', agent);
         
         currentUser.agent = {
@@ -569,7 +572,9 @@ async function handleVerification() {
         currentStep = 1;
         showStep(currentStep);
         updateProgressBar();
-        localStorage.setItem('crmliff_current_agent', JSON.stringify(currentUser.agent));
+        
+        // Store agent for cross-page use
+        CRMLIFFCommon.setCurrentAgent(agent);
         
         // Start getting location after login
         getCurrentLocation();

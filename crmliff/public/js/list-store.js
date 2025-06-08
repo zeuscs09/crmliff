@@ -35,6 +35,10 @@ class StoreListApp {
             if (existingAgent) {
                 console.log('✅ Auto-login successful');
                 this.currentAgent = existingAgent;
+                
+                // Store agent for cross-page use
+                CRMLIFFCommon.setCurrentAgent(this.currentAgent);
+                
                 this.showMainScreen();
             } else {
                 console.log('🔐 Need manual verification');
@@ -55,18 +59,6 @@ class StoreListApp {
         // Display user profile
         if (this.userProfile) {
             document.getElementById('user-name').textContent = this.userProfile.displayName || 'ผู้ใช้';
-        }
-
-        // Show link info when not auto-logged in
-        const linkInfo = document.getElementById('link-info');
-        const verificationMessage = document.getElementById('verification-message');
-        
-        if (linkInfo) {
-            linkInfo.style.display = 'block';
-        }
-        
-        if (verificationMessage) {
-            verificationMessage.textContent = 'กรุณากรอกรหัสพนักงานเซลส์เพื่อเชื่อมโยงกับบัญชี LINE ของคุณ';
         }
         
         // Setup verification
@@ -99,8 +91,12 @@ class StoreListApp {
             verifyBtn.disabled = true;
             verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
 
-            // Use smart verification (check LINE UID first, then verify code)
-            this.currentAgent = await CRMLIFFCommon.smartVerifyAgent(agentCode, this.userProfile.userId);
+            // Verify agent code and link with LINE UID
+            this.currentAgent = await CRMLIFFCommon.verifyAndLinkAgent(agentCode, this.userProfile.userId);
+            
+            // Store agent for cross-page use
+            CRMLIFFCommon.setCurrentAgent(this.currentAgent);
+            
             this.showMainScreen();
 
         } catch (error) {
@@ -141,13 +137,7 @@ class StoreListApp {
             window.location.href = '/liff-app';
         });
 
-        // Setup change agent button
-        const changeAgentBtn = document.getElementById('change-agent-btn');
-        if (changeAgentBtn) {
-            changeAgentBtn.addEventListener('click', () => {
-                this.showLoginScreen();
-            });
-        }
+
     }
 
     async loadStores() {
@@ -353,6 +343,8 @@ class StoreListApp {
     hideElement(id) {
         CRMLIFFCommon.hideElement(id);
     }
+
+
 
     showError(message) {
         CRMLIFFCommon.showError(message);

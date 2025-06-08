@@ -300,6 +300,42 @@
         .status-inactive { background: #f44336; }
         .status-pending { background: #ff9800; }
         
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 12px 10px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab:hover {
+            background: #e9ecef;
+            color: #667eea;
+        }
+        
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .nav-tab i {
+            margin-right: 5px;
+        }
+
         /* Responsive Design */
         @media (max-width: 480px) {
             .page-header {
@@ -362,7 +398,7 @@
             
             <div class="verification-form">
                 <h3>ยืนยันตัวตน</h3>
-                <p id="verification-message">กรุณากรอกรหัสพนักงานเซลส์ของคุณ</p>
+                <p id="verification-message">กรุณากรอกรหัสพนักงานเซลส์เพื่อเชื่อมโยงกับบัญชี LINE ของคุณ</p>
                 <div class="form-group">
                     <label for="agent-code">รหัสพนักงานเซลส์</label>
                     <input type="text" id="agent-code" placeholder="เช่น S001, S002">
@@ -370,8 +406,8 @@
                 <button id="verify-btn" class="btn btn-primary">
                     <i class="fas fa-check"></i> ยืนยันตัวตน
                 </button>
-                <p id="link-info" class="text-muted" style="font-size: 12px; margin-top: 10px; display: none;">
-                    <i class="fas fa-info-circle"></i> ระบบจะเชื่อมโยงบัญชี LINE ของคุณกับรหัสพนักงาน เพื่อให้คุณไม่ต้องกรอกรหัสใหม่ในครั้งต่อไป
+                <p class="text-muted" style="font-size: 12px; margin-top: 10px; color: #666;">
+                    <i class="fas fa-info-circle"></i> เมื่อยืนยันแล้ว ระบบจะจดจำบัญชีของคุณ ไม่ต้องกรอกรหัสใหม่
                 </p>
             </div>
         </div>
@@ -379,13 +415,20 @@
 
     <!-- Main Store List Screen -->
     <div id="main-screen" class="screen hidden">
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" id="nav-list">
+                <i class="fas fa-list"></i> รายการร้าน
+            </button>
+            <button class="nav-tab" id="nav-create" onclick="window.location.href='/liff-app'">
+                <i class="fas fa-plus"></i> สร้างใหม่
+            </button>
+        </div>
+
         <!-- Page Header -->
         <div class="page-header">
             <h1><i class="fas fa-store"></i> รายการร้านค้า</h1>
             <p>ร้านที่คุณได้เยี่ยมชมและสร้างไว้</p>
-            <button id="change-agent-btn" class="btn-link" style="float: right; background: none; border: none; color: #667eea; font-size: 14px;">
-                <i class="fas fa-exchange-alt"></i> เปลี่ยนพนักงาน
-            </button>
         </div>
 
         <!-- Search Container -->
