@@ -576,34 +576,79 @@ class StoreListApp {
             formData.append('file', processedFile);
             formData.append('doctype', 'CLIFF Store');
             formData.append('docname', 'temp');
+            formData.append('is_private', '0');
+            formData.append('attached_to_doctype', 'CLIFF Store');
+            formData.append('attached_to_name', 'temp');
 
             const csrfToken = await this.getCSRFToken();
             
-            const response = await fetch('/api/method/upload_file', {
+            // Try upload with authentication first
+            let response = await fetch('/api/method/upload_file', {
                 method: 'POST',
                 headers: {
                     'X-Frappe-CSRF-Token': csrfToken,
+                    'Accept': 'application/json'
                 },
                 body: formData
             });
 
             console.log('📤 Upload response status:', response.status);
             
+            if (response.status === 403) {
+                console.log('🔄 403 error, trying alternative upload method...');
+                
+                // Try alternative upload through our custom API
+                try {
+                    response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
+                        method: 'POST',
+                        headers: {
+                            'X-Frappe-CSRF-Token': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                    
+                    console.log('📤 Alternative upload response:', response.status);
+                    
+                } catch (altError) {
+                    console.error('❌ Alternative upload also failed:', altError);
+                    throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ');
+                }
+            }
+            
             if (response.status === 413) {
                 throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
             }
             
             if (!response.ok) {
-                throw new Error(`Upload failed: HTTP ${response.status}`);
+                const errorText = await response.text();
+                console.error('❌ Upload HTTP Error:', response.status, errorText);
+                throw new Error(`Upload failed: HTTP ${response.status} - ${errorText}`);
             }
 
             const result = await response.json();
             console.log('📤 Upload result:', result);
             
-            if (result.message && result.message.file_url) {
-                console.log('✅ Photo uploaded successfully:', result.message.file_url);
+            // Handle different response formats
+            if (result.file_url) {
+                // Direct file_url response (from custom API or standard upload)
+                console.log('✅ Photo uploaded successfully:', result.file_url);
+                return result.file_url;
+            } else if (result.message && result.message.file_url) {
+                // Standard Frappe upload response with message wrapper
+                console.log('✅ Photo uploaded successfully (wrapped):', result.message.file_url);
                 return result.message.file_url;
+            } else if (result.name && result.file_name) {
+                // File doc response - construct URL
+                const fileUrl = result.file_url || `/files/${result.file_name}`;
+                console.log('✅ Photo uploaded, using file URL:', fileUrl);
+                return fileUrl;
+            } else if (result.success === false) {
+                // Error response
+                console.error('❌ Upload failed:', result.error || result.message);
+                throw new Error(result.message || result.error || 'Upload failed');
             } else {
+                console.error('❌ Invalid upload response:', result);
                 throw new Error('Upload failed: Invalid response format');
             }
             
@@ -611,7 +656,11 @@ class StoreListApp {
             console.error('❌ Photo upload error:', error);
             
             // More specific error messages
-            if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
+            if (error.name === 'AbortError') {
+                throw new Error('การอัปโหลดรูปภาพใช้เวลานานเกินไป กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่');
+            } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                throw new Error('ไม่มีสิทธิ์ในการอัปโหลดไฟล์ กรุณาล็อกอินใหม่หรือติดต่อผู้ดูแลระบบ');
+            } else if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
                 throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
             } else if (error.message.includes('Failed to fetch')) {
                 throw new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');

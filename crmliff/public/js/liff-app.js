@@ -1238,15 +1238,12 @@ async function uploadPhoto(file) {
         
         console.log('📤 Sending upload request to /api/method/upload_file');
         
-        // ใน LIFF environment ใช้ custom API ตรงๆ เลย เพื่อหลีกเลี่ยงปัญหา permission
-        console.log('📤 Using LIFF custom upload endpoint...');
-        
-        let response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
+        // Try upload with authentication first
+        let response = await fetch('/api/method/upload_file', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': csrfToken,
-                'Accept': 'application/json',
-                'User-Agent': 'LIFF-App/1.0' // ระบุว่าเป็น LIFF
+                'Accept': 'application/json'
             },
             body: formData,
             signal: controller.signal
@@ -1254,20 +1251,21 @@ async function uploadPhoto(file) {
 
         clearTimeout(timeoutId);
 
-        console.log('📤 LIFF Upload response:', {
+        console.log('📤 Upload response:', {
             status: response.status,
             statusText: response.statusText,
             headers: Object.fromEntries(response.headers.entries())
         });
         
-        // ถ้า custom API ยังไม่ได้ ลอง standard upload
-        if (response.status === 403 || response.status === 500) {
-            console.log('🔄 Custom API failed, trying standard upload...');
+        if (response.status === 403) {
+            console.log('🔄 403 error, trying alternative upload method...');
             
+            // Try alternative upload through our custom API
             try {
+                clearTimeout(timeoutId);
                 const altTimeoutId = setTimeout(() => controller.abort(), 60000);
                 
-                response = await fetch('/api/method/upload_file', {
+                response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
                     method: 'POST',
                     headers: {
                         'X-Frappe-CSRF-Token': csrfToken,
@@ -1278,10 +1276,10 @@ async function uploadPhoto(file) {
                 });
                 
                 clearTimeout(altTimeoutId);
-                console.log('📤 Standard upload response:', response.status);
+                console.log('📤 Alternative upload response:', response.status);
                 
             } catch (altError) {
-                console.error('❌ Standard upload also failed:', altError);
+                console.error('❌ Alternative upload also failed:', altError);
                 throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ');
             }
         }
@@ -1324,24 +1322,6 @@ async function uploadPhoto(file) {
         
     } catch (error) {
         console.error('❌ Photo upload error:', error);
-        
-        // Log detailed error for debugging in LIFF
-        const errorDetails = {
-            error: error.message,
-            stack: error.stack,
-            name: error.name,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            isLIFF: window.liff ? await liff.isInClient() : false
-        };
-        
-        // Store error in localStorage for debug modal
-        const existingErrors = JSON.parse(localStorage.getItem('CRMLIFF_UPLOAD_ERRORS') || '[]');
-        existingErrors.push(errorDetails);
-        if (existingErrors.length > 5) existingErrors.shift(); // Keep only last 5 errors
-        localStorage.setItem('CRMLIFF_UPLOAD_ERRORS', JSON.stringify(existingErrors));
-        
-        console.log('🔍 Upload error details stored for debugging:', errorDetails);
         
         // More specific error messages
         if (error.name === 'AbortError') {
@@ -1478,9 +1458,6 @@ function showDebugModal() {
         // Recent errors
         lastError: localStorage.getItem('crmliff_last_error') ? 
             JSON.parse(localStorage.getItem('crmliff_last_error')) : null,
-        
-        // Upload errors
-        uploadErrors: JSON.parse(localStorage.getItem('CRMLIFF_UPLOAD_ERRORS') || '[]'),
         
         // Last submission
         lastSubmission: window.lastSubmissionData || null,

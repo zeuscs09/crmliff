@@ -576,48 +576,130 @@ class StoreDetailApp {
     }
 
     async uploadPhoto(file) {
-        // Compress image before upload
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+        console.log('📤 Uploading photo...', file.size, 'bytes');
         
-        return new Promise((resolve, reject) => {
-            img.onload = async () => {
-                // Calculate new dimensions (max 800px width)
-                const maxWidth = 800;
-                const scale = Math.min(maxWidth / img.width, maxWidth / img.height);
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                
-                // Draw and compress
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                canvas.toBlob(async (blob) => {
-                    try {
-                        const formData = new FormData();
-                        formData.append('file', blob, file.name);
-                        formData.append('is_private', 0);
-                        
-                        const response = await fetch('/api/method/upload_file', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        
-                        const result = await response.json();
-                        if (result.message && result.message.file_url) {
-                            resolve(result.message.file_url);
-                        } else {
-                            reject(new Error('Upload failed'));
-                        }
-                    } catch (error) {
-                        reject(error);
-                    }
-                }, 'image/jpeg', 0.8);
-            };
+        try {
+            // Compress image before upload
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
             
-            img.onerror = reject;
-            img.src = URL.createObjectURL(file);
-        });
+            const compressedBlob = await new Promise((resolve, reject) => {
+                img.onload = () => {
+                    // Calculate new dimensions (max 800px width)
+                    const maxWidth = 800;
+                    const scale = Math.min(maxWidth / img.width, maxWidth / img.height);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    
+                    // Draw and compress
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, 'image/jpeg', 0.8);
+                };
+                
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+            
+            const formData = new FormData();
+            formData.append('file', compressedBlob, file.name);
+            formData.append('doctype', 'CLIFF Store');
+            formData.append('docname', 'temp');
+            formData.append('is_private', '0');
+            formData.append('attached_to_doctype', 'CLIFF Store');
+            formData.append('attached_to_name', 'temp');
+            
+            const csrfToken = await this.getCSRFToken();
+            
+            // Try upload with authentication first
+            let response = await fetch('/api/method/upload_file', {
+                method: 'POST',
+                headers: {
+                    'X-Frappe-CSRF-Token': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+            
+            console.log('📤 Upload response status:', response.status);
+            
+            if (response.status === 403) {
+                console.log('🔄 403 error, trying alternative upload method...');
+                
+                // Try alternative upload through our custom API
+                try {
+                    response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
+                        method: 'POST',
+                        headers: {
+                            'X-Frappe-CSRF-Token': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                    
+                    console.log('📤 Alternative upload response:', response.status);
+                    
+                } catch (altError) {
+                    console.error('❌ Alternative upload also failed:', altError);
+                    throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ');
+                }
+            }
+            
+            if (response.status === 413) {
+                throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Upload HTTP Error:', response.status, errorText);
+                throw new Error(`Upload failed: HTTP ${response.status} - ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log('📤 Upload result:', result);
+            
+            // Handle different response formats
+            if (result.file_url) {
+                // Direct file_url response (from custom API or standard upload)
+                console.log('✅ Photo uploaded successfully:', result.file_url);
+                return result.file_url;
+            } else if (result.message && result.message.file_url) {
+                // Standard Frappe upload response with message wrapper
+                console.log('✅ Photo uploaded successfully (wrapped):', result.message.file_url);
+                return result.message.file_url;
+            } else if (result.name && result.file_name) {
+                // File doc response - construct URL
+                const fileUrl = result.file_url || `/files/${result.file_name}`;
+                console.log('✅ Photo uploaded, using file URL:', fileUrl);
+                return fileUrl;
+            } else if (result.success === false) {
+                // Error response
+                console.error('❌ Upload failed:', result.error || result.message);
+                throw new Error(result.message || result.error || 'Upload failed');
+            } else {
+                console.error('❌ Invalid upload response:', result);
+                throw new Error('Upload failed: Invalid response format');
+            }
+            
+        } catch (error) {
+            console.error('❌ Photo upload error:', error);
+            
+            // More specific error messages
+            if (error.name === 'AbortError') {
+                throw new Error('การอัปโหลดรูปภาพใช้เวลานานเกินไป กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่');
+            } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                throw new Error('ไม่มีสิทธิ์ในการอัปโหลดไฟล์ กรุณาล็อกอินใหม่หรือติดต่อผู้ดูแลระบบ');
+            } else if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
+                throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
+            } else if (error.message.includes('Failed to fetch')) {
+                throw new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+            } else {
+                throw error;
+            }
+        }
     }
 
     showEditModal() {
@@ -780,6 +862,20 @@ class StoreDetailApp {
     showSuccess(message) {
         // You can implement a success toast or notification here
         console.log('✅ Success:', message);
+    }
+
+    async getCSRFToken() {
+        try {
+            const response = await fetch('/api/method/frappe.sessions.get_csrf_token', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const result = await response.json();
+            return result.message;
+        } catch (error) {
+            console.error('Failed to get CSRF token:', error);
+            return null;
+        }
     }
 }
 

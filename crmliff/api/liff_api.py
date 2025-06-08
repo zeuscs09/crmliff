@@ -691,14 +691,13 @@ def upload_photo():
         # Use frappe.utils.file_manager for proper handling with ignore_permissions
         from frappe.utils.file_manager import save_file
         
-        # Save file using file_manager with explicit ignore_permissions
+        # Save file using file_manager 
         file_doc = save_file(
             fname=unique_filename,
             content=file_content,
             dt="CLIFF Store",
             dn="temp",
-            is_private=0,
-            ignore_permissions=True
+            is_private=0
         )
         
         frappe.logger().info(f"LIFF Upload Success - File URL: {file_doc.file_url}")
