@@ -974,16 +974,27 @@ async function handlePhotoSelected(event) {
     }
     
     try {
-        // Compress image if it's too large
+        // Always compress images for mobile/LIFF - more aggressive compression
         let processedFile = file;
-        if (file.size > 2 * 1024 * 1024) { // 2MB threshold
+        console.log(`📸 Original image: ${(file.size / 1024).toFixed(1)}KB`);
+        
+        // Compress based on size with more aggressive settings
+        if (file.size > 3 * 1024 * 1024) { // > 3MB - very aggressive
+            console.log('🗜️ Compressing very large image...');
+            processedFile = await compressImage(file, 0.4, 1200, 800); // 40% quality, max 1200x800
+        } else if (file.size > 1 * 1024 * 1024) { // > 1MB - moderate
             console.log('🗜️ Compressing large image...');
-            processedFile = await compressImage(file, 0.7, 1920); // 70% quality, max 1920px width
-            console.log('✅ Image compressed:', processedFile.size, 'bytes');
+            processedFile = await compressImage(file, 0.6, 1600, 1200); // 60% quality, max 1600x1200
+        } else if (file.size > 500 * 1024) { // > 500KB - light compression
+            console.log('🗜️ Light compression...');
+            processedFile = await compressImage(file, 0.7, 1920, 1080); // 70% quality, max 1920x1080
         }
         
-        if (processedFile.size > 5 * 1024 * 1024) {
-            showError('ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)');
+        console.log(`✅ Final image: ${(processedFile.size / 1024).toFixed(1)}KB`);
+        
+        // Lower size limit for better upload success
+        if (processedFile.size > 3 * 1024 * 1024) { // 3MB limit instead of 5MB
+            showError('ขนาดไฟล์ใหญ่เกินไป (สูงสุด 3MB) กรุณาถ่ายรูปใหม่');
             return;
         }
         
@@ -1227,12 +1238,15 @@ async function uploadPhoto(file) {
         
         console.log('📤 Sending upload request to /api/method/upload_file');
         
-        // Try upload with authentication first
-        let response = await fetch('/api/method/upload_file', {
+        // ใน LIFF environment ใช้ custom API ตรงๆ เลย เพื่อหลีกเลี่ยงปัญหา permission
+        console.log('📤 Using LIFF custom upload endpoint...');
+        
+        let response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': csrfToken,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'User-Agent': 'LIFF-App/1.0' // ระบุว่าเป็น LIFF
             },
             body: formData,
             signal: controller.signal
@@ -1240,21 +1254,20 @@ async function uploadPhoto(file) {
 
         clearTimeout(timeoutId);
 
-        console.log('📤 Upload response:', {
+        console.log('📤 LIFF Upload response:', {
             status: response.status,
             statusText: response.statusText,
             headers: Object.fromEntries(response.headers.entries())
         });
         
-        if (response.status === 403) {
-            console.log('🔄 403 error, trying alternative upload method...');
+        // ถ้า custom API ยังไม่ได้ ลอง standard upload
+        if (response.status === 403 || response.status === 500) {
+            console.log('🔄 Custom API failed, trying standard upload...');
             
-            // Try alternative upload through our custom API
             try {
-                clearTimeout(timeoutId);
                 const altTimeoutId = setTimeout(() => controller.abort(), 60000);
                 
-                response = await fetch('/api/method/crmliff.api.liff_api.upload_photo', {
+                response = await fetch('/api/method/upload_file', {
                     method: 'POST',
                     headers: {
                         'X-Frappe-CSRF-Token': csrfToken,
@@ -1265,10 +1278,10 @@ async function uploadPhoto(file) {
                 });
                 
                 clearTimeout(altTimeoutId);
-                console.log('📤 Alternative upload response:', response.status);
+                console.log('📤 Standard upload response:', response.status);
                 
             } catch (altError) {
-                console.error('❌ Alternative upload also failed:', altError);
+                console.error('❌ Standard upload also failed:', altError);
                 throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ');
             }
         }
@@ -1287,22 +1300,22 @@ async function uploadPhoto(file) {
         console.log('📤 Upload result:', result);
         
         // Handle different response formats
-        if (result.success && result.message && result.message.file_url) {
-            // Custom API response format
-            console.log('✅ Photo uploaded successfully (custom API):', result.message.file_url);
-            return result.message.file_url;
+        if (result.file_url) {
+            // Direct file_url response (from custom API or standard upload)
+            console.log('✅ Photo uploaded successfully:', result.file_url);
+            return result.file_url;
         } else if (result.message && result.message.file_url) {
-            // Standard Frappe upload response
-            console.log('✅ Photo uploaded successfully (standard):', result.message.file_url);
+            // Standard Frappe upload response with message wrapper
+            console.log('✅ Photo uploaded successfully (wrapped):', result.message.file_url);
             return result.message.file_url;
-        } else if (result.message && result.message.name) {
-            // Sometimes Frappe returns file name instead of URL
-            const fileUrl = `/files/${result.message.name}`;
-            console.log('✅ Photo uploaded, constructed URL:', fileUrl);
+        } else if (result.name && result.file_name) {
+            // File doc response - construct URL
+            const fileUrl = result.file_url || `/files/${result.file_name}`;
+            console.log('✅ Photo uploaded, using file URL:', fileUrl);
             return fileUrl;
         } else if (result.success === false) {
-            // Error from custom API
-            console.error('❌ Upload failed (custom API):', result.error);
+            // Error response
+            console.error('❌ Upload failed:', result.error || result.message);
             throw new Error(result.message || result.error || 'Upload failed');
         } else {
             console.error('❌ Invalid upload response:', result);
@@ -1311,6 +1324,24 @@ async function uploadPhoto(file) {
         
     } catch (error) {
         console.error('❌ Photo upload error:', error);
+        
+        // Log detailed error for debugging in LIFF
+        const errorDetails = {
+            error: error.message,
+            stack: error.stack,
+            name: error.name,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            isLIFF: window.liff ? await liff.isInClient() : false
+        };
+        
+        // Store error in localStorage for debug modal
+        const existingErrors = JSON.parse(localStorage.getItem('CRMLIFF_UPLOAD_ERRORS') || '[]');
+        existingErrors.push(errorDetails);
+        if (existingErrors.length > 5) existingErrors.shift(); // Keep only last 5 errors
+        localStorage.setItem('CRMLIFF_UPLOAD_ERRORS', JSON.stringify(existingErrors));
+        
+        console.log('🔍 Upload error details stored for debugging:', errorDetails);
         
         // More specific error messages
         if (error.name === 'AbortError') {
@@ -1447,6 +1478,9 @@ function showDebugModal() {
         // Recent errors
         lastError: localStorage.getItem('crmliff_last_error') ? 
             JSON.parse(localStorage.getItem('crmliff_last_error')) : null,
+        
+        // Upload errors
+        uploadErrors: JSON.parse(localStorage.getItem('CRMLIFF_UPLOAD_ERRORS') || '[]'),
         
         // Last submission
         lastSubmission: window.lastSubmissionData || null,

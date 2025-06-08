@@ -652,9 +652,15 @@ def health_check():
 def upload_photo():
     """
     API: POST /api/method/crmliff.api.liff_api.upload_photo
-    Custom photo upload for LIFF with better production support
+    Custom photo upload for LIFF with production support and bypass permission checks
     """
     try:
+        # Log request info for debugging
+        user_agent = frappe.request.headers.get('User-Agent', 'Unknown')
+        is_liff = 'LIFF' in user_agent or 'LINE' in user_agent
+        
+        frappe.logger().info(f"LIFF Upload - User Agent: {user_agent}, Is LIFF: {is_liff}")
+        
         # Get uploaded file
         files = frappe.request.files
         if not files or 'file' not in files:
@@ -666,35 +672,48 @@ def upload_photo():
         if not file.filename:
             frappe.throw("Invalid file")
         
-        # Create file doc
-        file_doc = frappe.get_doc({
-            "doctype": "File",
-            "file_name": file.filename,
-            "is_private": 0,
-            "attached_to_doctype": "CLIFF Store",
-            "attached_to_name": "temp"
-        })
+        # Read file content
+        file_content = file.read()
+        file_size = len(file_content)
         
-        # Save file content
-        file_doc.save_file(file.read(), file.filename)
-        file_doc.insert(ignore_permissions=True)
+        frappe.logger().info(f"LIFF Upload - File: {file.filename}, Size: {file_size} bytes")
         
+        # Size limit check (3MB)
+        if file_size > 3 * 1024 * 1024:
+            frappe.throw("File too large. Maximum size is 3MB.")
+        
+        # Create unique filename to avoid conflicts
+        import uuid
+        import os
+        file_ext = os.path.splitext(file.filename)[1] if '.' in file.filename else '.jpg'
+        unique_filename = f"liff_upload_{uuid.uuid4().hex[:8]}{file_ext}"
+        
+        # Use frappe.utils.file_manager for proper handling with ignore_permissions
+        from frappe.utils.file_manager import save_file
+        
+        # Save file using file_manager with explicit ignore_permissions
+        file_doc = save_file(
+            fname=unique_filename,
+            content=file_content,
+            dt="CLIFF Store",
+            dn="temp",
+            is_private=0,
+            ignore_permissions=True
+        )
+        
+        frappe.logger().info(f"LIFF Upload Success - File URL: {file_doc.file_url}")
+        
+        # Return in standard Frappe format (matching /api/method/upload_file)
         return {
-            "success": True,
-            "message": {
-                "file_url": file_doc.file_url,
-                "file_name": file_doc.file_name,
-                "name": file_doc.name
-            }
+            "file_url": file_doc.file_url,
+            "file_name": file_doc.file_name,
+            "name": file_doc.name
         }
         
     except Exception as e:
-        frappe.log_error(f"Error uploading photo: {str(e)}")
-        return {
-            "success": False,
-            "error": str(e),
-            "message": "Failed to upload photo"
-        }
+        error_msg = str(e)
+        frappe.log_error(f"LIFF Upload Error: {error_msg}\nUser Agent: {frappe.request.headers.get('User-Agent', 'Unknown')}", "LIFF Upload Error")
+        frappe.throw(f"Upload failed: {error_msg}")
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
