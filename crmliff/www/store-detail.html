@@ -759,6 +759,32 @@
                  height: 60px;
              }
          }
+
+        /* Empty State Loading */
+        .empty-state .loading-spinner {
+            display: inline-block;
+        }
+
+        .empty-state .spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #e0e0e0;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -848,8 +874,10 @@
                 
                 <div id="checkin-history-content">
                     <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>กำลังโหลดประวัติ...</p>
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>กำลังโหลดประวัติ...</p>
+                        </div>
                     </div>
                 </div>
             </div>

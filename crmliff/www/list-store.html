@@ -661,6 +661,32 @@
             margin-bottom: 10px;
         }
 
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .loading-state .loading-spinner {
+            display: inline-block;
+        }
+
+        .loading-state .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .loading-state p {
+            font-size: 14px;
+            margin: 0;
+        }
+
         /* Responsive Design - Same as liff-app */
         @media (max-width: 480px) {
             .page-header {
@@ -761,8 +787,10 @@
         <div class="stores-container">
             <!-- Loading State -->
             <div id="loading-stores" class="loading-state">
-                <div class="loading-spinner"></div>
-                <p>กำลังโหลดรายการร้านค้า...</p>
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลดรายการร้านค้า...</p>
+                </div>
             </div>
 
             <!-- Empty State -->
