@@ -229,6 +229,8 @@ class StoreDetailApp {
         try {
             console.log('📥 Loading checkin history for store:', this.storeId);
             
+
+            
             const response = await fetch(`/api/method/crmliff.api.liff_api.get_store_checkin_history?store_id=${this.storeId}`);
             const result = await response.json();
             
@@ -523,7 +525,7 @@ class StoreDetailApp {
 
         const submitBtn = document.getElementById('checkin-submit-btn');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...';
+                                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...';
 
         try {
             // Upload photo first

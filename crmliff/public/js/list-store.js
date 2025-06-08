@@ -148,6 +148,8 @@ class StoreListApp {
             this.hideElement('empty-stores');
             this.hideElement('stores-list');
 
+
+
             const params = new URLSearchParams({
                 agent_code: this.currentAgent.name
             });
@@ -488,7 +490,7 @@ class StoreListApp {
         
         const submitBtn = document.getElementById('checkin-submit-btn');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...';
+                                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...';
         
         try {
             // First, upload the photo to get the file URL

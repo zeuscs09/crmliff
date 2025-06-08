@@ -662,7 +662,7 @@
             border: 2px solid #f3f3f3;
             border-top: 2px solid #667eea;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            /* animation: spin 1s linear infinite; */
         }
 
         @keyframes spin {
@@ -760,18 +760,19 @@
              }
          }
 
-        /* Empty State Loading */
-        .empty-state .loading-spinner {
-            display: inline-block;
+        /* Loading Spinner - Same as liff-app.css */
+        .loading-spinner {
+            text-align: center;
+            color: #666;
         }
 
-        .empty-state .spinner {
+        .spinner {
             width: 30px;
             height: 30px;
             border: 2px solid #e0e0e0;
             border-top: 2px solid #667eea;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            /* animation: spin 1s linear infinite; */
             margin: 0 auto 10px;
         }
 
@@ -780,10 +781,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        .empty-state p {
+        .loading-spinner p {
             margin: 0;
             font-size: 14px;
+            font-weight: 400;
             color: #666;
+            /* animation: none !important; */
+            transform: none !important;
         }
     </style>
 </head>
@@ -791,7 +795,7 @@
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-spinner">
-            <div class="spinner"></div>
+            <i class="fas fa-spinner fa-spin"></i>
             <p id="loading-text">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
@@ -875,7 +879,7 @@
                 <div id="checkin-history-content">
                     <div class="empty-state">
                         <div class="loading-spinner">
-                            <div class="spinner"></div>
+                            <i class="fas fa-spinner fa-spin"></i>
                             <p>กำลังโหลดประวัติ...</p>
                         </div>
                     </div>
@@ -1015,8 +1019,8 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/assets/crmliff/js/dev-mock.js?v=1.0.5"></script>
-    <script src="/assets/crmliff/js/common.js?v=1.0.5"></script>
-    <script src="/assets/crmliff/js/store-detail.js?v=1.0.5"></script>
+    <script src="/assets/crmliff/js/dev-mock.js?v=1.0.8"></script>
+    <script src="/assets/crmliff/js/common.js?v=1.0.8"></script>
+    <script src="/assets/crmliff/js/store-detail.js?v=1.0.8"></script>
 </body>
 </html> 
