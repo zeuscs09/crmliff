@@ -645,4 +645,49 @@ def health_check():
         "success": True,
         "message": "CRM LIFF API is working",
         "timestamp": frappe.utils.now()
-    } 
+    }
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def log_debug():
+    """
+    API: POST /api/method/crmliff.api.liff_api.log_debug
+    บันทึกข้อมูล Debug สำหรับการแก้ไขปัญหา
+    """
+    try:
+        # Get request data
+        request_data = frappe.request.get_data()
+        if isinstance(request_data, bytes):
+            request_data = request_data.decode('utf-8')
+        
+        data = json.loads(request_data) if isinstance(request_data, str) else request_data
+        
+        debug_info = data.get('debug_info', {})
+        user_id = data.get('user_id')
+        
+        # Create error log entry
+        error_log = frappe.get_doc({
+            "doctype": "Error Log",
+            "method": "LIFF Debug Info",
+            "error": json.dumps(debug_info, indent=2),
+            "reference_doctype": "CLIFF Customer Store Visit",
+            "reference_name": user_id or "Unknown User"
+        })
+        error_log.insert(ignore_permissions=True)
+        
+        # Also log to console for immediate debugging
+        frappe.logger().info(f"LIFF Debug Info from {user_id}: {json.dumps(debug_info, indent=2)}")
+        
+        return {
+            "success": True,
+            "message": "Debug info logged successfully",
+            "log_id": error_log.name
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error logging debug info: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to log debug info"
+        } 

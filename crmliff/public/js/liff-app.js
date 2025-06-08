@@ -88,7 +88,16 @@ const elements = {
     errorModal: document.getElementById('error-modal'),
     errorMessage: document.getElementById('error-message'),
     closeErrorBtn: document.getElementById('close-error'),
-    errorOkBtn: document.getElementById('error-ok-btn')
+    errorOkBtn: document.getElementById('error-ok-btn'),
+    showDebugBtn: document.getElementById('show-debug-btn'),
+    
+    // Debug modal
+    debugModal: document.getElementById('debug-modal'),
+    debugContent: document.getElementById('debug-content'),
+    closeDebugBtn: document.getElementById('close-debug-btn'),
+    closeDebugX: document.getElementById('close-debug'),
+    copyDebugBtn: document.getElementById('copy-debug-btn'),
+    sendDebugBtn: document.getElementById('send-debug-btn')
 };
 
 // ===== NAVIGATION BUTTONS =====
@@ -312,6 +321,13 @@ function initializeEventListeners() {
     // Error modal events
     elements.closeErrorBtn.addEventListener('click', closeErrorModal);
     elements.errorOkBtn.addEventListener('click', closeErrorModal);
+    elements.showDebugBtn.addEventListener('click', showDebugModal);
+    
+    // Debug modal events
+    elements.closeDebugBtn.addEventListener('click', closeDebugModal);
+    elements.closeDebugX.addEventListener('click', closeDebugModal);
+    elements.copyDebugBtn.addEventListener('click', copyDebugInfo);
+    elements.sendDebugBtn.addEventListener('click', sendDebugInfo);
 }
 
 // ===== SCREEN MANAGEMENT =====
@@ -433,8 +449,38 @@ function validateCurrentStep() {
                 currentLocation: !!currentLocation,
                 capturedPhoto: !!capturedPhoto,
                 selectedStoreType: selectedStoreType,
-                stepValidation: stepValidation
+                stepValidation: stepValidation,
+                currentUser: !!currentUser,
+                hasAgentCode: !!(currentUser && currentUser.agent && currentUser.agent.code)
             });
+            
+            // Check essential data
+            if (!currentUser || !currentUser.agent || !currentUser.agent.code) {
+                showError('ข้อมูลผู้ใช้ไม่ครบถ้วน กรุณาล็อกอินใหม่');
+                return false;
+            }
+            
+            if (!currentLocation) {
+                showError('ไม่พบข้อมูลตำแหน่ง กรุณากลับไปขั้นตอนที่ 1');
+                return false;
+            }
+            
+            if (!capturedPhoto) {
+                showError('ไม่พบรูปภาพ กรุณากลับไปขั้นตอนที่ 2');
+                return false;
+            }
+            
+            if (!selectedStoreType) {
+                showError('ไม่พบประเภทร้าน กรุณากลับไปขั้นตอนที่ 2');
+                return false;
+            }
+            
+            const storeNameStep4 = elements.storeNameStep3.value.trim();
+            if (!storeNameStep4) {
+                showError('ไม่พบชื่อร้าน กรุณากลับไปขั้นตอนที่ 3');
+                return false;
+            }
+            
             return stepValidation[1] && stepValidation[2] && stepValidation[3];
             
         default:
@@ -1016,8 +1062,17 @@ function handleStoreTypeSelection(event) {
 // ===== FORM SUBMISSION =====
 async function handleSubmission() {
     console.log('💾 Submitting form...');
+    console.log('🔍 Current state:', {
+        currentStep,
+        stepValidation,
+        currentLocation: !!currentLocation,
+        capturedPhoto: !!capturedPhoto,
+        selectedStoreType,
+        currentUser: !!currentUser
+    });
     
     if (!validateCurrentStep()) {
+        console.error('❌ Step validation failed');
         return;
     }
 
@@ -1029,7 +1084,15 @@ async function handleSubmission() {
     // Upload photo first if exists
     let photoUrl = null;
     if (capturedPhoto) {
-        photoUrl = await uploadPhoto(capturedPhoto.file);
+        try {
+            console.log('📸 Starting photo upload...');
+            photoUrl = await uploadPhoto(capturedPhoto.file);
+            console.log('✅ Photo upload completed:', photoUrl);
+        } catch (photoError) {
+            console.error('❌ Photo upload failed:', photoError);
+            showError(`ไม่สามารถอัปโหลดรูปภาพได้: ${photoError.message}`);
+            return; // Stop submission if photo upload fails
+        }
     }
     
     // Prepare phone number with country code if provided
@@ -1063,32 +1126,78 @@ async function handleSubmission() {
     };
     
     console.log('📊 Visit data prepared:', visitData);
+    console.log('📊 JSON size:', JSON.stringify(visitData).length, 'characters');
     
     elements.nextBtn.disabled = true;
     elements.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
     
+    // Store submission data for debugging
+    window.lastSubmissionData = visitData;
+    
     try {
+        console.log('🚀 Sending submission request...');
+        
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const response = await fetch('/api/method/crmliff.api.liff_api.create_store', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(visitData)
+            body: JSON.stringify(visitData),
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
+        console.log('📡 Response received:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ HTTP Error:', response.status, errorText);
+            throw new Error(`เซิร์ฟเวอร์ตอบกลับด้วยข้อผิดพลาด: ${response.status}`);
+        }
+
         const result = await response.json();
+        console.log('📋 Response data:', result);
 
         if (result.message && result.message.success) {
             console.log('✅ Visit data saved successfully:', result.message.data);
             showScreen('success');
             resetForm();
         } else {
-            throw new Error(result.message?.error || result.exc || 'เกิดข้อผิดพลาดในการบันทึก');
+            const errorMessage = result.message?.error || result.exc || result.message || 'เกิดข้อผิดพลาดในการบันทึก';
+            console.error('❌ API Error:', errorMessage);
+            throw new Error(errorMessage);
         }
         
     } catch (error) {
         console.error('❌ Submission failed:', error);
-        showError(error.message || 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง');
+        
+        // Store error for debugging
+        const errorData = {
+            timestamp: new Date().toISOString(),
+            error: error.message,
+            stack: error.stack,
+            visitData: visitData,
+            currentStep: currentStep,
+            stepValidation: stepValidation
+        };
+        localStorage.setItem('crmliff_last_error', JSON.stringify(errorData));
+        
+        let errorMessage = 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง';
+        
+        if (error.name === 'AbortError') {
+            errorMessage = 'การบันทึกใช้เวลานานเกินไป กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        showError(errorMessage);
         
     } finally {
         elements.nextBtn.disabled = false;
@@ -1108,13 +1217,20 @@ async function uploadPhoto(file) {
 
         const csrfToken = await CRMLIFFCommon.getCSRFToken();
         
+        // Add timeout for photo upload
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for upload
+        
         const response = await fetch('/api/method/upload_file', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': csrfToken,
             },
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         console.log('📤 Upload response status:', response.status);
         
@@ -1140,7 +1256,9 @@ async function uploadPhoto(file) {
         console.error('❌ Photo upload error:', error);
         
         // More specific error messages
-        if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
+        if (error.name === 'AbortError') {
+            throw new Error('การอัปโหลดรูปภาพใช้เวลานานเกินไป กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่');
+        } else if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
             throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
         } else if (error.message.includes('Failed to fetch')) {
             throw new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
@@ -1233,6 +1351,125 @@ function closeApp() {
     }
 }
 
+function showDebugModal() {
+    console.log('🐛 Showing debug modal...');
+    
+    // Collect debug information
+    const debugInfo = {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        
+        // App state
+        currentStep: currentStep,
+        stepValidation: stepValidation,
+        
+        // User info
+        currentUser: currentUser ? {
+            userId: currentUser.userId,
+            displayName: currentUser.displayName,
+            agent: currentUser.agent
+        } : null,
+        
+        // Location
+        currentLocation: currentLocation,
+        
+        // Form data
+        formData: {
+            hasPhoto: !!capturedPhoto,
+            photoSize: capturedPhoto ? capturedPhoto.file.size : null,
+            selectedStoreType: selectedStoreType,
+            storeName: elements.storeNameStep3.value.trim(),
+            contactName: elements.contactNameStep3.value.trim(),
+            contactPhone: elements.contactPhoneStep3.value.trim(),
+            description: elements.storeDescriptionStep3.value.trim()
+        },
+        
+        // Recent errors
+        lastError: localStorage.getItem('crmliff_last_error') ? 
+            JSON.parse(localStorage.getItem('crmliff_last_error')) : null,
+        
+        // Last submission
+        lastSubmission: window.lastSubmissionData || null,
+        
+        // Browser info
+        browserInfo: {
+            language: navigator.language,
+            cookieEnabled: navigator.cookieEnabled,
+            onLine: navigator.onLine,
+            platform: navigator.platform
+        }
+    };
+    
+    // Display in modal
+    elements.debugContent.textContent = JSON.stringify(debugInfo, null, 2);
+    elements.debugModal.classList.remove('hidden');
+    
+    // Store for copying/sending
+    window.currentDebugInfo = debugInfo;
+}
+
+function closeDebugModal() {
+    elements.debugModal.classList.add('hidden');
+}
+
+async function copyDebugInfo() {
+    try {
+        if (window.currentDebugInfo) {
+            const text = JSON.stringify(window.currentDebugInfo, null, 2);
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                alert('ข้อมูล Debug ถูกคัดลอกแล้ว');
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('ข้อมูล Debug ถูกคัดลอกแล้ว');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to copy debug info:', error);
+        alert('ไม่สามารถคัดลอกข้อมูลได้');
+    }
+}
+
+async function sendDebugInfo() {
+    try {
+        if (!window.currentDebugInfo) {
+            alert('ไม่พบข้อมูล Debug');
+            return;
+        }
+        
+        // Send debug info to server
+        const response = await fetch('/api/method/crmliff.api.liff_api.log_debug', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                debug_info: window.currentDebugInfo,
+                user_id: currentUser ? currentUser.userId : null
+            })
+        });
+        
+        if (response.ok) {
+            alert('ข้อมูล Debug ถูกส่งไปยังเซิร์ฟเวอร์แล้ว');
+            closeDebugModal();
+        } else {
+            throw new Error('ไม่สามารถส่งข้อมูลได้');
+        }
+        
+    } catch (error) {
+        console.error('Failed to send debug info:', error);
+        alert('ไม่สามารถส่งข้อมูล Debug ได้ กรุณาใช้ฟังก์ชันคัดลอกแทน');
+    }
+}
+
 // ===== DEBUG FUNCTIONS =====
 window.CRMLIFF_DEBUG = {
     getCurrentData: () => ({
@@ -1244,6 +1481,24 @@ window.CRMLIFF_DEBUG = {
         stepValidation: stepValidation,
         savedVisits: JSON.parse(localStorage.getItem('crmliff_visits') || '[]')
     }),
+    
+    getLastSubmission: () => window.lastSubmissionData,
+    
+    checkSubmission: () => {
+        const data = {
+            hasUser: !!currentUser,
+            hasAgent: !!(currentUser && currentUser.agent),
+            hasAgentCode: !!(currentUser && currentUser.agent && currentUser.agent.code),
+            hasLocation: !!currentLocation,
+            hasPhoto: !!capturedPhoto,
+            hasStoreType: !!selectedStoreType,
+            storeName: elements.storeNameStep3.value.trim(),
+            currentStep: currentStep,
+            stepValidation: stepValidation
+        };
+        console.log('🔍 Submission readiness check:', data);
+        return data;
+    },
     
     clearStorage: () => {
         localStorage.removeItem('crmliff_current_agent');
@@ -1264,6 +1519,49 @@ window.CRMLIFF_DEBUG = {
             currentStep = step;
             showStep(currentStep);
         }
+    },
+    
+    forceSubmit: async () => {
+        console.log('🚨 Force submitting...');
+        await handleSubmission();
+    },
+    
+    getLastError: () => {
+        const error = localStorage.getItem('crmliff_last_error');
+        if (error) {
+            console.log('🔥 Last error:', JSON.parse(error));
+            return JSON.parse(error);
+        } else {
+            console.log('✅ No recent errors found');
+            return null;
+        }
+    },
+    
+    showDebugScreen: () => {
+        showDebugModal();
+    },
+    
+    exportDebugData: () => {
+        const debugInfo = {
+            lastError: localStorage.getItem('crmliff_last_error'),
+            currentAgent: localStorage.getItem('crmliff_current_agent'),
+            visits: localStorage.getItem('crmliff_visits'),
+            lastVisit: localStorage.getItem('crmliff_last_visit'),
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            userAgent: navigator.userAgent
+        };
+        
+        const dataStr = JSON.stringify(debugInfo, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `crm-debug-${Date.now()}.json`;
+        link.click();
+        
+        console.log('📦 Debug data exported:', debugInfo);
+        return debugInfo;
     }
 };
 
@@ -1272,3 +1570,32 @@ console.log('🔧 Debug functions available: CRMLIFF_DEBUG');
 // Make retry functions available globally for onclick
 window.retryLocation = retryLocation;
 window.retryLoadStoreTypes = retryLoadStoreTypes;
+
+// Triple-tap debug activation
+let debugTapCount = 0;
+let debugTapTimeout = null;
+
+document.addEventListener('click', function(event) {
+    // Only trigger on loading text or app title
+    const target = event.target;
+    if (target.id === 'loading-text' || 
+        (target.tagName === 'H1' && target.textContent.includes('Sales Kit')) ||
+        (target.tagName === 'P' && target.textContent.includes('เก็บข้อมูลร้านค้า'))) {
+        
+        debugTapCount++;
+        
+        if (debugTapTimeout) {
+            clearTimeout(debugTapTimeout);
+        }
+        
+        if (debugTapCount >= 3) {
+            // Show debug info directly without error modal
+            showDebugModal();
+            debugTapCount = 0;
+        } else {
+            debugTapTimeout = setTimeout(() => {
+                debugTapCount = 0;
+            }, 1000); // Reset after 1 second
+        }
+    }
+});

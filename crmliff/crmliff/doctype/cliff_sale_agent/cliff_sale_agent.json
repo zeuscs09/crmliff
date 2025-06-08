@@ -47,7 +47,6 @@
    "unique": 1
   },
   {
-   "default": "+66",
    "description": "\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c",
    "fieldname": "phone",
    "fieldtype": "Data",
@@ -74,7 +73,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-08 15:07:56.060730",
+ "modified": "2025-06-08 16:29:56.495699",
  "modified_by": "Administrator",
  "module": "Crmliff",
  "name": "CLIFF Sale Agent",
