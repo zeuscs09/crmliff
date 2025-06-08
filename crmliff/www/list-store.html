@@ -20,6 +20,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Reset and Base Styles - Same as liff-app */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-bottom: 100px;
+        }
+
         /* Store List Specific Styles */
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -33,22 +56,22 @@
         }
         
         .page-header h1 {
-            margin: 0 0 10px 0;
-            font-size: 24px;
+            margin: 0 0 8px 0;
+            font-size: 22px;
             font-weight: 600;
         }
         
         .page-header p {
             margin: 0;
             opacity: 0.9;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .search-container {
-            padding: 20px;
+            padding: 16px 20px;
             background: white;
             position: sticky;
-            top: 80px;
+            top: 80px; /* Header only */
             z-index: 99;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -80,20 +103,37 @@
         }
         
         .stores-container {
-            padding: 0 20px 100px 20px;
-            max-width: 600px;
+            padding: 0 12px 100px 12px;
+            max-width: 700px;
             margin: 0 auto;
+        }
+
+        /* Add padding top to first card */
+        .stores-container .store-card:first-child {
+            margin-top: 20px;
+        }
+
+        /* Responsive design for larger screens */
+        @media (min-width: 768px) {
+            .search-container {
+                max-width: 700px;
+                margin: 0 auto;
+                padding: 16px 20px;
+            }
+            
+            .stores-container {
+                padding: 0 16px 100px 16px;
+            }
         }
         
         .store-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
+            margin-bottom: 16px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
         
         .store-card:hover {
@@ -101,64 +141,64 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
-        .store-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+        .store-image {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
         }
         
-        .store-info {
-            flex: 1;
+        .store-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .store-card .store-name {
+            margin: 16px 16px 12px 16px;
+        }
+        
+        .store-card .store-type,
+        .store-card .store-detail-item {
+            margin: 4px 16px;
+        }
+        
+        .store-card .store-actions {
+            margin: 16px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
         }
         
         .store-name {
-            font-size: 18px;
-            font-weight: 600;
+            margin: 0 0 12px 0;
             color: #333;
-            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .store-type {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #f8f9fa;
+            margin: 4px 0;
             color: #666;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .store-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-left: 15px;
-        }
-        
-        .store-image.placeholder {
-            background: #f0f0f0;
+            font-size: 14px;
+            line-height: 1.4;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 24px;
-        }
-        
-        .store-details {
-            margin: 15px 0;
+            gap: 8px;
         }
         
         .store-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            margin: 4px 0;
             color: #666;
             font-size: 14px;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .store-detail-item i {
@@ -169,8 +209,10 @@
         
         .store-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
         }
         
         .btn-checkin {
@@ -178,12 +220,16 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
         
         .btn-checkin:hover {
@@ -191,36 +237,87 @@
             transform: translateY(-1px);
         }
         
+        .btn-navigate {
+            flex: 1;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .btn-navigate:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
         .btn-view {
             background: #f8f9fa;
             color: #666;
             border: 1px solid #e0e0e0;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
-        
+
         .btn-view:hover {
             background: #e9ecef;
+            border-color: #ccc;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Responsive FAB */
+        @media (max-width: 480px) {
+            .fab {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
         }
         
-        .last-visit {
-            font-size: 12px;
-            color: #999;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .visit-count {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-        }
+
         
         .empty-state {
             text-align: center;
@@ -300,43 +397,271 @@
         .status-inactive { background: #f44336; }
         .status-pending { background: #ff9800; }
         
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-tab {
-            flex: 1;
-            padding: 12px 10px;
-            background: none;
-            border: none;
+        /* Loading States */
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
             color: #666;
+        }
+        
+        .loading-state .loading-spinner {
+            margin-bottom: 20px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-state p {
+            font-size: 16px;
+            font-weight: 400;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .empty-state p {
             font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .nav-tab:hover {
-            background: #e9ecef;
-            color: #667eea;
-        }
-        
-        .nav-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background: white;
-        }
-        
-        .nav-tab i {
-            margin-right: 5px;
+            line-height: 1.5;
+            color: #999;
         }
 
-        /* Responsive Design */
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .store-info-summary {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .store-info-summary h4 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .location-display {
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .photo-preview {
+            margin-top: 10px;
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+            cursor: pointer;
+        }
+        
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fafafa;
+            resize: vertical;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group textarea:focus {
+            border-color: #667eea;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+        
+        /* Photo Capture Styles */
+        .photo-capture-container {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .photo-capture-container:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .btn-photo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-photo:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .photo-preview-large {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Responsive Design - Same as liff-app */
         @media (max-width: 480px) {
             .page-header {
                 padding: 15px;
@@ -347,27 +672,29 @@
             }
             
             .search-container {
-                padding: 15px;
+                padding: 12px 15px;
             }
             
             .stores-container {
-                padding: 0 15px 100px 15px;
+                padding: 0 12px 100px 12px;
             }
             
             .store-card {
-                padding: 15px;
+                padding: 12px;
+                margin-bottom: 10px;
             }
             
             .store-name {
                 font-size: 16px;
             }
             
-            .fab {
-                bottom: 15px;
-                right: 15px;
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
+            .nav-tab {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            
+            .nav-tab i {
+                font-size: 12px;
             }
         }
     </style>
@@ -415,15 +742,6 @@
 
     <!-- Main Store List Screen -->
     <div id="main-screen" class="screen hidden">
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" id="nav-list">
-                <i class="fas fa-list"></i> รายการร้าน
-            </button>
-            <button class="nav-tab" id="nav-create" onclick="window.location.href='/liff-app'">
-                <i class="fas fa-plus"></i> สร้างใหม่
-            </button>
-        </div>
 
         <!-- Page Header -->
         <div class="page-header">
@@ -461,9 +779,64 @@
         </div>
 
         <!-- Floating Action Button -->
-        <button id="fab-new-store" class="fab" title="สร้างร้านใหม่">
+        <button id="fab-new-store" class="fab" title="สร้างร้านใหม่" onclick="window.location.href='/liff-app'">
             <i class="fas fa-plus"></i>
         </button>
+    </div>
+
+    <!-- Check-in Modal -->
+    <div id="checkin-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-map-marker-alt"></i> เช็คอิน</h3>
+                <button id="close-checkin" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="checkin-store-info" class="store-info-summary">
+                    <!-- Store info will be populated here -->
+                </div>
+                
+                <div class="form-group">
+                    <label>📍 ตำแหน่งปัจจุบัน</label>
+                    <div id="checkin-location-display" class="location-display">
+                        กำลังหาตำแหน่ง...
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>📝 หมายเหตุ (ไม่บังคับ)</label>
+                    <textarea id="checkin-remark" placeholder="เช่น: เจ้าของร้านให้ความสนใจในสินค้าใหม่..." rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>📷 ถ่ายรูป</label>
+                    <div class="photo-capture-container" id="checkin-photo-capture-container">
+                        <input type="file" id="checkin-photo" accept="image/*" capture="environment" style="display: none;">
+                        <div id="checkin-photo-preview" class="photo-preview hidden">
+                            <img id="checkin-preview-image" class="photo-preview-large" src="" alt="Preview">
+                            <div>
+                                <button id="checkin-retake-btn" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> ถ่ายใหม่
+                                </button>
+                            </div>
+                        </div>
+                        <div id="checkin-photo-capture-prompt">
+                            <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                            <p style="color: #666; margin-bottom: 20px;">คลิกเพื่อถ่ายรูปหน้าร้าน</p>
+                            <button id="checkin-take-photo-btn" class="btn btn-photo">
+                                <i class="fas fa-camera"></i> ถ่ายรูป
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="checkin-cancel-btn" class="btn btn-secondary">ยกเลิก</button>
+                <button id="checkin-submit-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-check"></i> เช็คอิน
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Error Modal -->
@@ -483,7 +856,8 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/assets/crmliff/js/common.js?v=1.0.0"></script>
-    <script src="/assets/crmliff/js/list-store.js?v=1.0.2"></script>
+    <script src="/assets/crmliff/js/dev-mock.js?v=1.0.2"></script>
+    <script src="/assets/crmliff/js/common.js?v=1.0.1"></script>
+    <script src="/assets/crmliff/js/list-store.js?v=1.0.4"></script>
 </body>
 </html> 

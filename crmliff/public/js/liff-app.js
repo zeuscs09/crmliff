@@ -7,6 +7,7 @@ let mapInstance = null;
 let locationMarker = null;
 let currentStep = 1;
 const totalSteps = 4;
+let storeTypes = []; // Store types from API
 
 // Step validation flags
 let stepValidation = {
@@ -16,15 +17,11 @@ let stepValidation = {
     4: false  // confirm
 };
 
-// Store type labels mapping
-const storeTypeLabels = {
-    'food': 'ร้านอาหาร',
-    'retail': 'ร้านค้าปลีก',
-    'grocery': 'ร้านโชห่วย',
-    'drink': 'ร้านเครื่องดื่ม',
-    'convenience': 'ร้านสะดวกซื้อ',
-    'pharmacy': 'ร้านยา'
-};
+// Store type labels mapping (will be updated from API)
+let storeTypeLabels = {};
+
+// No fallback icons - all data must come from API
+const storeTypeIcons = {};
 
 // ===== DOM ELEMENTS =====
 const screens = {
@@ -85,6 +82,7 @@ const elements = {
     
     // Success screen
     newVisitBtn: document.getElementById('new-visit-btn'),
+    closeSuccessBtn: document.getElementById('close-success-btn'),
     
     // Error modal
     errorModal: document.getElementById('error-modal'),
@@ -93,15 +91,32 @@ const elements = {
     errorOkBtn: document.getElementById('error-ok-btn')
 };
 
-// ===== STORE TYPE DATA =====
-const storeTypeMapping = {
-    'food': 'FOOD001', // Map to actual store type codes in system
-    'retail': 'RETAIL001',
-    'grocery': 'GROCERY001',
-    'drink': 'DRINK001',
-    'convenience': 'CONV001',
-    'pharmacy': 'PHARM001'
-};
+// ===== NAVIGATION BUTTONS =====
+function updateNavigationButtons() {
+    // Update previous button
+    elements.prevBtn.disabled = currentStep === 1;
+    
+    // Check validation based on current step
+    let isValidStep = stepValidation[currentStep];
+    
+    // Special check for step 3 - store name is required
+    if (currentStep === 3) {
+        const storeName = elements.storeNameStep3.value.trim();
+        isValidStep = !!storeName;
+        stepValidation[3] = isValidStep;
+    }
+    
+    // Update next button
+    if (currentStep === totalSteps) {
+        elements.nextBtn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล';
+        elements.nextBtn.disabled = !isValidStep;
+        console.log(`🔘 Submit button state: disabled=${elements.nextBtn.disabled}, stepValidation[${currentStep}]=${isValidStep}`);
+    } else {
+        elements.nextBtn.innerHTML = 'ถัดไป <i class="fas fa-chevron-right"></i>';
+        elements.nextBtn.disabled = !isValidStep;
+        console.log(`🔘 Next button state: disabled=${elements.nextBtn.disabled}, stepValidation[${currentStep}]=${isValidStep}`);
+    }
+}
 
 // ===== APP INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -121,6 +136,9 @@ async function initializeLiff() {
         }
         
         console.log('✅ LIFF initialized successfully');
+        
+        // Load store types from API
+        await loadStoreTypes();
         
         // Try auto-login first
         const existingAgent = await CRMLIFFCommon.getAgentByLineUID(currentUser.userId);
@@ -155,6 +173,111 @@ async function initializeLiff() {
     }
 }
 
+// ===== LOAD STORE TYPES FROM API =====
+async function loadStoreTypes() {
+    try {
+        console.log('📥 Loading store types from API...');
+        
+        const response = await fetch('/api/method/crmliff.api.liff_api.get_store_types');
+        const result = await response.json();
+        
+        if (result.message && result.message.success && result.message.data) {
+            storeTypes = result.message.data;
+            console.log('✅ Store types loaded:', storeTypes);
+            
+            if (storeTypes.length === 0) {
+                throw new Error('ไม่พบข้อมูลประเภทร้านในระบบ');
+            }
+            
+            // Update store type labels
+            storeTypes.forEach(type => {
+                storeTypeLabels[type.store_type_code] = type.store_type_name;
+                console.log(`🎨 Store type ${type.store_type_code}: color=${type.color}, icon=${type.icon}`);
+            });
+            
+            // Generate store type grid
+            generateStoreTypeGrid();
+        } else {
+            throw new Error(result.message?.error || 'ไม่สามารถโหลดข้อมูลประเภทร้านได้');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading store types:', error);
+        showStoreTypeError(error.message);
+    }
+}
+
+// Generate store type grid from API data
+function generateStoreTypeGrid() {
+    const grid = elements.storeTypeGrid;
+    grid.innerHTML = '';
+    
+    storeTypes.forEach(type => {
+        const card = document.createElement('div');
+        card.className = 'store-type-card';
+        card.dataset.type = type.store_type_code;
+        
+        // Use icon from API only
+        const icon = type.icon || '🏪';
+        
+        // Apply color from API immediately (no hover needed for mobile)
+        if (type.color) {
+            console.log(`🎨 Setting color for ${type.store_type_code}: ${type.color}`);
+            
+            // Set border color and light background immediately
+            card.style.borderColor = type.color;
+            card.style.backgroundColor = `${type.color}08`; // Very light background
+            
+        } else {
+            console.warn(`⚠️ No color found for ${type.store_type_code}`);
+        }
+        
+        card.innerHTML = `
+            <div class="icon">${icon}</div>
+            <div class="name">${type.store_type_name}</div>
+        `;
+        
+        // Store color for later use in selection
+        card.dataset.color = type.color || '';
+        
+        grid.appendChild(card);
+    });
+    
+    console.log('✅ Store type grid generated with', storeTypes.length, 'types');
+}
+
+// Show error when store types cannot be loaded
+function showStoreTypeError(errorMessage) {
+    const grid = elements.storeTypeGrid;
+    grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff5f5; border-radius: 12px; border: 2px dashed #fed7d7;">
+            <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+            <div style="font-size: 16px; margin-bottom: 10px; color: #e53e3e; font-weight: 600;">ไม่สามารถโหลดประเภทร้านได้</div>
+            <div style="font-size: 14px; margin-bottom: 20px; color: #666;">${errorMessage}</div>
+            <button onclick="retryLoadStoreTypes()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Prompt', sans-serif;">
+                <i class="fas fa-redo"></i> ลองใหม่
+            </button>
+        </div>
+    `;
+    
+    // Disable step 2 navigation
+    stepValidation[2] = false;
+    updateNavigationButtons();
+}
+
+// Retry loading store types
+function retryLoadStoreTypes() {
+    console.log('🔄 Retrying store types...');
+    const grid = elements.storeTypeGrid;
+    grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <div style="font-size: 24px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i></div>
+            <div style="font-size: 14px; color: #666;">กำลังโหลดประเภทร้าน...</div>
+        </div>
+    `;
+    loadStoreTypes();
+}
+
 // ===== EVENT LISTENERS =====
 function initializeEventListeners() {
     // Login events
@@ -175,8 +298,16 @@ function initializeEventListeners() {
     // Step 2 - Store type events
     elements.storeTypeGrid.addEventListener('click', handleStoreTypeSelection);
     
+    // Step 3 - Store name validation
+    elements.storeNameStep3.addEventListener('input', function() {
+        if (currentStep === 3) {
+            updateNavigationButtons();
+        }
+    });
+    
     // Success screen events
     elements.newVisitBtn.addEventListener('click', startNewVisit);
+    elements.closeSuccessBtn.addEventListener('click', closeApp);
     
     // Error modal events
     elements.closeErrorBtn.addEventListener('click', closeErrorModal);
@@ -188,6 +319,12 @@ function showScreen(screenName) {
     console.log(`📺 Showing screen: ${screenName}`);
     Object.values(screens).forEach(screen => screen.classList.add('hidden'));
     if (screens[screenName]) screens[screenName].classList.remove('hidden');
+    
+    // Scroll to top when switching screens
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
 // ===== STEP NAVIGATION =====
@@ -218,13 +355,6 @@ function showStep(stepNumber) {
         stepContent.classList.add('active');
     }
     
-    // Update navigation buttons
-    elements.prevBtn.disabled = stepNumber === 1;
-    elements.nextBtn.textContent = stepNumber === totalSteps ? 'บันทึกข้อมูล' : 'ถัดไป';
-    elements.nextBtn.innerHTML = stepNumber === totalSteps ? 
-        '<i class="fas fa-save"></i> บันทึกข้อมูล' : 
-        'ถัดไป <i class="fas fa-chevron-right"></i>';
-    
     // Initialize step-specific functionality
     if (stepNumber === 1) {
         initializeStep1();
@@ -232,7 +362,15 @@ function showStep(stepNumber) {
         initializeStep4();
     }
     
+    // Update navigation buttons and progress bar
+    updateNavigationButtons();
     updateProgressBar();
+    
+    // Scroll to top when changing steps
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
 function goToNextStep() {
@@ -281,11 +419,22 @@ function validateCurrentStep() {
             stepValidation[2] = true;
             return true;
             
-        case 3: // Information (optional)
+        case 3: // Information (required store name)
+            const storeName = elements.storeNameStep3.value.trim();
+            if (!storeName) {
+                showError('กรุณากรอกชื่อร้าน');
+                return false;
+            }
             stepValidation[3] = true;
             return true;
             
         case 4: // Confirm
+            console.log('🔍 Step 4 validation check:', {
+                currentLocation: !!currentLocation,
+                capturedPhoto: !!capturedPhoto,
+                selectedStoreType: selectedStoreType,
+                stepValidation: stepValidation
+            });
             return stepValidation[1] && stepValidation[2] && stepValidation[3];
             
         default:
@@ -303,7 +452,7 @@ function initializeStep1() {
     }, 200);
     
     // Update button state based on location availability
-    updateStep1ButtonState();
+    updateLocationButtonState();
 }
 
 function initializeStepMap() {
@@ -365,7 +514,7 @@ function initializeStepMap() {
         
         console.log('✅ Step 1 Map initialized successfully');
         hideLocationPending();
-        updateStep1ButtonState();
+        updateLocationButtonState();
         
     } catch (error) {
         console.error('❌ Step 1 Map initialization failed:', error);
@@ -416,14 +565,16 @@ function retryLocation() {
     getCurrentLocation();
 }
 
-function updateStep1ButtonState() {
-    if (elements.nextBtn) {
-        if (currentLocation) {
-            elements.nextBtn.disabled = false;
-            elements.nextBtn.innerHTML = 'ถัดไป <i class="fas fa-chevron-right"></i>';
-        } else {
-            elements.nextBtn.disabled = true;
+function updateLocationButtonState() {
+    stepValidation[1] = !!currentLocation;
+    
+    if (currentStep === 1) {
+        updateNavigationButtons();
+        if (!currentLocation) {
             elements.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> รอตำแหน่ง...';
+        } else {
+            // Location is ready, update button text
+            elements.nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i> ถัดไป';
         }
     }
 }
@@ -432,42 +583,69 @@ function updateStep1ButtonState() {
 function initializeStep4() {
     console.log('📋 Initializing step 4 - confirm data');
     
-    // Update location info
+    // Location data
     if (currentLocation) {
+        elements.confirmAddress.textContent = currentLocation.address || 'ไม่สามารถระบุที่อยู่ได้';
         elements.confirmCoordinates.textContent = `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}`;
-        // Mock address for demo
-        elements.confirmAddress.textContent = 'ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพมหานคร';
     }
     
-    // Update photo
+    // Photo data
     if (capturedPhoto) {
         elements.confirmPhoto.src = capturedPhoto.dataUrl;
-        elements.confirmPhoto.style.display = 'block';
+        elements.confirmPhoto.alt = 'รูปหน้าร้าน';
     } else {
-        elements.confirmPhoto.style.display = 'none';
+        elements.confirmPhoto.src = '';
+        elements.confirmPhoto.alt = 'ไม่มีรูปภาพ';
     }
     
-    // Update store type
-    elements.confirmStoreType.textContent = selectedStoreType ? storeTypeLabels[selectedStoreType] || selectedStoreType : '-';
+    // Store type data
+    elements.confirmStoreType.textContent = storeTypeLabels[selectedStoreType] || selectedStoreType || '-';
     
-    // Update store information
+    // Information data  
     elements.confirmStoreName.textContent = elements.storeNameStep3.value.trim() || '-';
     elements.confirmContactName.textContent = elements.contactNameStep3.value.trim() || '-';
     elements.confirmContactPhone.textContent = elements.contactPhoneStep3.value.trim() || '-';
     elements.confirmDescription.textContent = elements.storeDescriptionStep3.value.trim() || '-';
+    
+    // Update step validation and button state
+    stepValidation[4] = stepValidation[1] && stepValidation[2] && stepValidation[3];
+    updateNavigationButtons();
+    
+    console.log('📋 Step 4 initialized with validation:', stepValidation);
 }
 
 // ===== LOCATION SERVICES =====
 async function getCurrentLocation() {
     console.log('📍 Getting current location...');
+    console.log('🔧 Checking mock location:', window.mockLocation);
     
     // Show loading state in step 1 if we're currently on it
     if (currentStep === 1) {
-        updateStep1ButtonState();
+        showLocationPending();
+        updateLocationButtonState();
     }
     
     try {
-        if ('geolocation' in navigator) {
+        // Check for mock location first (development mode)
+        if (window.mockLocation) {
+            console.log('🔧 Using mock location:', window.mockLocation);
+            currentLocation = {...window.mockLocation}; // Clone the object
+            stepValidation[1] = true;
+            console.log('✅ Mock location set:', currentLocation);
+            
+            // Skip real geolocation entirely when using mock
+            await updateLocationDisplay();
+            updateLocationButtonState();
+            
+            // If we're on step 1, re-initialize map with new location
+            if (currentStep === 1) {
+                setTimeout(() => {
+                    initializeStepMap();
+                }, 500);
+            }
+            return; // Exit early when using mock location
+            
+        } else if ('geolocation' in navigator) {
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
@@ -491,18 +669,25 @@ async function getCurrentLocation() {
     } catch (error) {
         console.warn('⚠️ Location error:', error.message);
         
-        // Don't auto-set mock location - let user handle it
-        stepValidation[1] = false;
-        
-        // Show error message
-        if (currentStep === 1) {
-            showLocationError();
-            showError('ไม่สามารถระบุตำแหน่งได้ กรุณาเปิดการใช้งาน GPS หรือตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+        // Check for mock location as fallback
+        if (window.mockLocation) {
+            console.log('🔧 Using mock location as fallback:', window.mockLocation);
+            currentLocation = window.mockLocation;
+            stepValidation[1] = true;
+        } else {
+            stepValidation[1] = false;
+            
+            // Show error message
+            if (currentStep === 1) {
+                showLocationError();
+                showError('ไม่สามารถระบุตำแหน่งได้ กรุณาเปิดการใช้งาน GPS หรือตรวจสอบการเชื่อมต่ออินเทอร์เน็ต หรือใช้ DEV_TOOLS.setMockLocation()');
+            }
+            return;
         }
-        return;
     }
     
-    updateLocationDisplay();
+    await updateLocationDisplay();
+    updateLocationButtonState();
     
     // If we're on step 1, re-initialize map with new location
     if (currentStep === 1) {
@@ -512,7 +697,7 @@ async function getCurrentLocation() {
     }
 }
 
-function updateLocationDisplay() {
+async function updateLocationDisplay() {
     if (currentLocation) {
         const { latitude, longitude, accuracy } = currentLocation;
         
@@ -522,7 +707,33 @@ function updateLocationDisplay() {
         }
         
         if (elements.currentAddress) {
-            elements.currentAddress.textContent = 'ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพมหานคร';
+            // Show loading state
+            elements.currentAddress.textContent = 'กำลังหาที่อยู่...';
+            
+            try {
+                let address = await getAddressFromCoordinates(latitude, longitude);
+                
+                // Fallback for mock locations if API doesn't return good results
+                if (window.mockLocation && (!address || address.includes('ไม่พบ'))) {
+                    const mockAddresses = {
+                        '13.7365,100.5618': 'ถนนสุขุมวิท แขวงคลองตัน เขตคลองตัน กรุงเทพมหานคร (BTS อโศก)',
+                        '13.7469,100.5389': 'ถนนราชดำริ แขวงปทุมวัน เขตปทุมวัน กรุงเทพมหานคร (Central World)',
+                        '13.7992,100.5495': 'ถนนพหลโยธิน แขวงจตุจักร เขตจตุจักร กรุงเทพมหานคร (จตุจักร)',
+                        '13.7456,100.5342': 'ถนนพระราม 1 แขวงปทุมวัน เขตปทุมวัน กรุงเทพมหานคร (สยาม)'
+                    };
+                    
+                    const locationKey = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+                    address = mockAddresses[locationKey] || address || 'ที่อยู่จำลอง (Mock Location)';
+                }
+                
+                elements.currentAddress.textContent = address;
+                currentLocation.address = address; // Store address in currentLocation for step 4
+                
+            } catch (error) {
+                console.warn('⚠️ Failed to get address:', error);
+                elements.currentAddress.textContent = 'ไม่สามารถระบุที่อยู่ได้';
+                currentLocation.address = 'ไม่สามารถระบุที่อยู่ได้';
+            }
         }
         
         // Update accuracy indicator
@@ -541,6 +752,75 @@ function updateLocationDisplay() {
             elements.accuracyDot.className = `accuracy-dot ${accuracyClass}`;
             elements.accuracyText.textContent = `ความแม่นยำ: ${accuracyLabel} (±${accuracy.toFixed(0)}m)`;
         }
+    }
+}
+
+// ===== REVERSE GEOCODING =====
+async function getAddressFromCoordinates(lat, lng) {
+    try {
+        console.log(`🗺️ Getting address for coordinates: ${lat}, ${lng}`);
+        
+        const url = `https://nominatim.openstreetmap.org/reverse?` + 
+                   `format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=th,en`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'CRM-LIFF-App/1.0'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('🏠 Nominatim response:', data);
+        
+        if (data && data.address) {
+            const addr = data.address;
+            let addressParts = [];
+            
+            // Build Thai-style address
+            if (addr.house_number && addr.road) {
+                addressParts.push(`${addr.house_number} ${addr.road}`);
+            } else if (addr.road) {
+                addressParts.push(`ถนน${addr.road}`);
+            }
+            
+            if (addr.suburb || addr.neighbourhood) {
+                addressParts.push(`แขวง${addr.suburb || addr.neighbourhood}`);
+            }
+            
+            if (addr.city_district || addr.district) {
+                addressParts.push(`เขต${addr.city_district || addr.district}`);
+            }
+            
+            if (addr.city || addr.state) {
+                addressParts.push(addr.city || addr.state);
+            }
+            
+            if (addr.country && addr.country === 'ประเทศไทย') {
+                addressParts.push('ประเทศไทย');
+            }
+            
+            let fullAddress = addressParts.join(' ');
+            
+            // If we don't have enough detail, use display_name
+            if (addressParts.length < 2 && data.display_name) {
+                fullAddress = data.display_name;
+            }
+            
+            console.log('✅ Address found:', fullAddress);
+            return fullAddress || 'ไม่พบข้อมูลที่อยู่';
+            
+        } else {
+            console.warn('⚠️ No address data returned');
+            return 'ไม่พบข้อมูลที่อยู่';
+        }
+        
+    } catch (error) {
+        console.error('❌ Geocoding error:', error);
+        return 'ไม่สามารถระบุที่อยู่ได้';
     }
 }
 
@@ -594,7 +874,49 @@ function handlePhotoCapture() {
     elements.photoInput.click();
 }
 
-function handlePhotoSelected(event) {
+// ===== IMAGE COMPRESSION =====
+function compressImage(file, quality = 0.7, maxWidth = 1920, maxHeight = 1080) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            // Calculate new dimensions
+            let { width, height } = img;
+            
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            
+            if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+            }
+            
+            // Set canvas size
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob((blob) => {
+                // Create new file from blob
+                const compressedFile = new File([blob], file.name, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+                resolve(compressedFile);
+            }, 'image/jpeg', quality);
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+async function handlePhotoSelected(event) {
     const file = event.target.files[0];
     if (!file) return;
     
@@ -605,28 +927,43 @@ function handlePhotoSelected(event) {
         return;
     }
     
-    if (file.size > 5 * 1024 * 1024) {
-        showError('ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        elements.previewImageStep2.src = e.target.result;
-        elements.photoPreviewStep2.classList.remove('hidden');
-        elements.photoCapturePrompt.classList.add('hidden');
-        elements.photoCaptureContainer.classList.add('has-photo');
+    try {
+        // Compress image if it's too large
+        let processedFile = file;
+        if (file.size > 2 * 1024 * 1024) { // 2MB threshold
+            console.log('🗜️ Compressing large image...');
+            processedFile = await compressImage(file, 0.7, 1920); // 70% quality, max 1920px width
+            console.log('✅ Image compressed:', processedFile.size, 'bytes');
+        }
         
-        capturedPhoto = {
-            file: file,
-            dataUrl: e.target.result,
-            timestamp: new Date().toISOString()
+        if (processedFile.size > 5 * 1024 * 1024) {
+            showError('ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            elements.previewImageStep2.src = e.target.result;
+            elements.photoPreviewStep2.classList.remove('hidden');
+            elements.photoCapturePrompt.classList.add('hidden');
+            elements.photoCaptureContainer.classList.add('has-photo');
+            
+            capturedPhoto = {
+                file: processedFile,
+                originalFile: file,
+                dataUrl: e.target.result,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('✅ Photo preview loaded');
         };
         
-        console.log('✅ Photo preview loaded');
-    };
-    
-    reader.readAsDataURL(file);
+        reader.readAsDataURL(processedFile);
+        
+    } catch (error) {
+        console.error('❌ Photo processing error:', error);
+        showError('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ');
+    }
 }
 
 function handleRetakePhoto() {
@@ -643,17 +980,37 @@ function handleStoreTypeSelection(event) {
     const card = event.target.closest('.store-type-card');
     if (!card) return;
     
-    const storeType = card.dataset.type;
-    console.log(`🏪 Store type selected: ${storeType}`);
-    
-    // Remove selection from all cards
+    // Remove previous selection and reset to default appearance
     document.querySelectorAll('.store-type-card').forEach(el => {
         el.classList.remove('selected');
+        const originalColor = el.dataset.color;
+        if (originalColor) {
+            el.style.borderColor = originalColor;
+            el.style.backgroundColor = `${originalColor}08`; // Light background
+        } else {
+            el.style.borderColor = '#e0e0e0';
+            el.style.backgroundColor = 'white';
+        }
+        el.style.boxShadow = 'none';
     });
     
     // Add selection to clicked card
     card.classList.add('selected');
-    selectedStoreType = storeType;
+    selectedStoreType = card.dataset.type;
+    
+    // Apply selected styling
+    const cardColor = card.dataset.color;
+    if (cardColor) {
+        card.style.borderColor = cardColor;
+        card.style.backgroundColor = `${cardColor}20`; // Stronger background for selection
+        card.style.boxShadow = `0 0 0 3px ${cardColor}30`; // Glow effect
+    }
+    
+    console.log('🏪 Store type selected:', selectedStoreType);
+    
+    // Update step validation
+    stepValidation[2] = !!(capturedPhoto && selectedStoreType);
+    updateNavigationButtons();
 }
 
 // ===== FORM SUBMISSION =====
@@ -675,18 +1032,29 @@ async function handleSubmission() {
         photoUrl = await uploadPhoto(capturedPhoto.file);
     }
     
+    // Prepare phone number with country code if provided
+    let contactPhone = elements.contactPhoneStep3.value.trim();
+    if (contactPhone && !contactPhone.startsWith('+')) {
+        // Add Thailand country code if not present
+        if (contactPhone.startsWith('0')) {
+            contactPhone = '+66' + contactPhone.substring(1);
+        } else {
+            contactPhone = '+66' + contactPhone;
+        }
+    }
+    
     const visitData = {
-        agent_code: currentUser.agent.agentDoc,
+        agent_code: currentUser.agent.code,
         visit_type: visitType,
         store_id: storeId, // Only for check-in
         location_lat: currentLocation.latitude,
         location_lng: currentLocation.longitude,
         address: currentLocation.address,
-        store_type: storeTypeMapping[selectedStoreType] || selectedStoreType,
+        store_type: selectedStoreType, // Use the exact store type code from API
         store_name: elements.storeNameStep3.value.trim(),
         store_description: elements.storeDescriptionStep3.value.trim(),
         contact_name: elements.contactNameStep3.value.trim(),
-        contact_phone: elements.contactPhoneStep3.value.trim(),
+        contact_phone: contactPhone,
         cover_image: photoUrl,
         photos: photoUrl ? [{
             image: photoUrl,
@@ -700,14 +1068,10 @@ async function handleSubmission() {
     elements.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
     
     try {
-        // Get CSRF token
-        const csrfToken = await CRMLIFFCommon.getCSRFToken();
-        
-        const response = await fetch('/api/method/crmliff.api.liff_api.save_visit_data', {
+        const response = await fetch('/api/method/crmliff.api.liff_api.create_store', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': csrfToken,
             },
             body: JSON.stringify(visitData)
         });
@@ -715,11 +1079,11 @@ async function handleSubmission() {
         const result = await response.json();
 
         if (result.message && result.message.success) {
-            console.log('✅ Visit data saved successfully');
+            console.log('✅ Visit data saved successfully:', result.message.data);
             showScreen('success');
             resetForm();
         } else {
-            throw new Error(result.message?.error || 'เกิดข้อผิดพลาดในการบันทึก');
+            throw new Error(result.message?.error || result.exc || 'เกิดข้อผิดพลาดในการบันทึก');
         }
         
     } catch (error) {
@@ -732,10 +1096,10 @@ async function handleSubmission() {
     }
 }
 
-
-
 // ===== PHOTO UPLOAD =====
 async function uploadPhoto(file) {
+    console.log('📤 Uploading photo...', file.size, 'bytes');
+    
     try {
         const formData = new FormData();
         formData.append('file', file);
@@ -752,18 +1116,37 @@ async function uploadPhoto(file) {
             body: formData
         });
 
+        console.log('📤 Upload response status:', response.status);
+        
+        if (response.status === 413) {
+            throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
+        }
+        
+        if (!response.ok) {
+            throw new Error(`Upload failed: HTTP ${response.status}`);
+        }
+
         const result = await response.json();
+        console.log('📤 Upload result:', result);
         
         if (result.message && result.message.file_url) {
+            console.log('✅ Photo uploaded successfully:', result.message.file_url);
             return result.message.file_url;
         } else {
-            console.warn('Photo upload failed, continuing without photo');
-            return null;
+            throw new Error('Upload failed: Invalid response format');
         }
         
     } catch (error) {
-        console.error('Photo upload error:', error);
-        return null;
+        console.error('❌ Photo upload error:', error);
+        
+        // More specific error messages
+        if (error.message.includes('413') || error.message.includes('Request Entity Too Large')) {
+            throw new Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป กรุณาลองถ่ายรูปใหม่');
+        } else if (error.message.includes('Failed to fetch')) {
+            throw new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+        } else {
+            throw error;
+        }
     }
 }
 
@@ -806,6 +1189,25 @@ function startNewVisit() {
     showStep(currentStep);
 }
 
+// ===== UTILITY FUNCTIONS =====
+function hexToRgb(hex) {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Handle 3-digit hex codes
+    if (hex.length === 3) {
+        hex = hex.split('').map(char => char + char).join('');
+    }
+    
+    // Parse hex to RGB
+    const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
 // ===== ERROR HANDLING =====
 function showError(message) {
     console.error('⚠️ Error:', message);
@@ -814,6 +1216,21 @@ function showError(message) {
 
 function closeErrorModal() {
     CRMLIFFCommon.closeError();
+}
+
+function closeApp() {
+    console.log('🚪 Closing app...');
+    
+    if (window.liff && window.liff.closeWindow) {
+        // Close LINE LIFF window if available
+        window.liff.closeWindow();
+    } else if (window.close) {
+        // Fallback to standard window close
+        window.close();
+    } else {
+        // If can't close, navigate to list-store as fallback
+        window.location.href = '/list-store';
+    }
 }
 
 // ===== DEBUG FUNCTIONS =====
@@ -852,5 +1269,6 @@ window.CRMLIFF_DEBUG = {
 
 console.log('🔧 Debug functions available: CRMLIFF_DEBUG');
 
-// Make retryLocation available globally for onclick
+// Make retry functions available globally for onclick
 window.retryLocation = retryLocation;
+window.retryLoadStoreTypes = retryLoadStoreTypes;

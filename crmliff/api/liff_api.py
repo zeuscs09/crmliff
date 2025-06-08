@@ -189,16 +189,28 @@ def submit_store_visit(**kwargs):
         }
 
 
-@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
-def save_visit_data(data):
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_store():
     """
-    API: POST /api/method/crmliff.api.liff_api.save_visit_data
-    บันทึกข้อมูลการเข้าเยี่ยมลูกค้า พร้อมสนับสนุนการสร้างร้านใหม่และการเช็คอิน
+    API: POST /api/method/crmliff.api.liff_api.create_store
+    สร้างร้านใหม่พร้อมข้อมูลครบถ้วน
     """
     try:
-        data = json.loads(data) if isinstance(data, str) else data
+        # Get request data and headers
+        request_data = frappe.request.get_data()
+        headers = dict(frappe.request.headers)
+        source_ip = frappe.request.remote_addr
         
-        visit_type = data.get('visit_type', 'New Store')
+        # Parse JSON data
+        try:
+            data = json.loads(request_data)
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "Invalid JSON format",
+                "message": "ข้อมูล JSON ไม่ถูกต้อง"
+            }
+        
         agent_code = data.get('agent_code')
         
         # Verify agent
@@ -206,58 +218,34 @@ def save_visit_data(data):
         if not agent:
             return {"success": False, "error": "ไม่พบข้อมูลพนักงานเซลส์"}
         
-        store_doc = None
+        # Create new store
+        store_doc = frappe.new_doc("CLIFF Store")
+        store_doc.store_name = data.get('store_name')
+        store_doc.store_type = data.get('store_type')
+        store_doc.created_by_agent = agent_code
+        store_doc.store_description = data.get('store_description')
+        store_doc.contact_name = data.get('contact_name')
+        store_doc.contact_phone = data.get('contact_phone')
+        store_doc.location_lat = data.get('location_lat')
+        store_doc.location_lng = data.get('location_lng')
+        store_doc.address = data.get('address')
+        store_doc.status = 'Active'
         
-        if visit_type == 'New Store':
-            # Create new store
-            store_doc = frappe.new_doc("CLIFF Store")
-            store_doc.store_name = data.get('store_name')
-            store_doc.store_type = data.get('store_type')
-            store_doc.created_by_agent = agent_code
-            store_doc.store_description = data.get('store_description')
-            store_doc.contact_name = data.get('contact_name')
-            store_doc.contact_phone = data.get('contact_phone')
-            store_doc.location_lat = data.get('location_lat')
-            store_doc.location_lng = data.get('location_lng')
-            store_doc.address = data.get('address')
-            store_doc.status = 'Active'
-            
-            # Handle cover image
-            if data.get('cover_image'):
-                store_doc.cover_image = data.get('cover_image')
-            
-            store_doc.insert(ignore_permissions=True)
-            
-        elif visit_type == 'Check-in':
-            # Get existing store and update visit count
-            store_id = data.get('store_id')
-            if not store_id:
-                return {"success": False, "error": "ไม่พบข้อมูลร้านที่จะเช็คอิน"}
-            
-            store_doc = frappe.get_doc("CLIFF Store", store_id)
-            store_doc.update_visit_count()
+        # Handle cover image
+        if data.get('cover_image'):
+            store_doc.cover_image = data.get('cover_image')
+        
+        store_doc.insert(ignore_permissions=True)
         
         # Create visit record
         visit = frappe.new_doc("CLIFF Customer Store Visit")
         visit.sale_agent = agent_code
-        visit.visit_type = visit_type
+        visit.visit_type = "New Store"
         visit.visit_datetime = frappe.utils.now()
-        
-        if store_doc:
-            visit.store_link = store_doc.name
-            visit.store_type = store_doc.store_type
-            visit.store_name = store_doc.store_name
-            visit.store_description = store_doc.store_description
-            visit.contact_name = store_doc.contact_name
-            visit.contact_phone = store_doc.contact_phone
-            visit.location_lat = store_doc.location_lat
-            visit.location_lng = store_doc.location_lng
-        else:
-            # For check-in without creating new store
-            visit.store_type = data.get('store_type')
-            visit.store_name = data.get('store_name')
-            visit.location_lat = data.get('location_lat')
-            visit.location_lng = data.get('location_lng')
+        visit.store_name = store_doc.name
+        visit.remark = data.get('remark', '')  # Add remark field
+        visit.location_lat = store_doc.location_lat
+        visit.location_lng = store_doc.location_lng
         
         # Handle photos
         photos_data = data.get('photos', [])
@@ -272,9 +260,9 @@ def save_visit_data(data):
             "success": True,
             "data": {
                 "visit_id": visit.name,
-                "store_id": store_doc.name if store_doc else None
+                "store_id": store_doc.name
             },
-            "message": "บันทึกข้อมูลสำเร็จ"
+            "message": "สร้างร้านสำเร็จ"
         }
         
     except Exception as e:
@@ -283,6 +271,115 @@ def save_visit_data(data):
             "success": False,
             "error": str(e),
             "message": "เกิดข้อผิดพลาดในการบันทึกข้อมูล"
+        }
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def checkin_store():
+    """
+    API: POST /api/method/crmliff.api.liff_api.checkin_store
+    เช็คอินร้านที่มีอยู่แล้ว (แค่ location + photos)
+    """
+    try:
+        # Get request data
+        request_data = frappe.request.get_data()
+        
+        # Parse JSON data
+        try:
+            data = json.loads(request_data)
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "Invalid JSON format",
+                "message": "ข้อมูล JSON ไม่ถูกต้อง"
+            }
+        
+        agent_code = data.get('agent_code')
+        store_id = data.get('store_id')
+        
+        # Verify agent
+        agent = frappe.get_doc("CLIFF Sale Agent", agent_code)
+        if not agent:
+            return {"success": False, "error": "ไม่พบข้อมูลพนักงานเซลส์"}
+        
+        # Verify store exists
+        store_doc = frappe.get_doc("CLIFF Store", store_id)
+        if not store_doc:
+            return {"success": False, "error": "ไม่พบข้อมูลร้านค้า"}
+        
+        # Update store visit count
+        store_doc.update_visit_count()
+        
+        # Create visit record
+        visit = frappe.new_doc("CLIFF Customer Store Visit")
+        visit.sale_agent = agent_code
+        visit.visit_type = "Check-in"
+        visit.visit_datetime = frappe.utils.now()
+        visit.store_name = store_doc.name
+        visit.remark = data.get('remark', '')
+       
+        visit.location_lat = data.get('location_lat')
+        visit.location_lng = data.get('location_lng')
+        
+        # Handle photos (required for check-in)
+        photos_data = data.get('photos', [])
+        if not photos_data:
+            return {"success": False, "error": "กรุณาถ่ายรูปอย่างน้อย 1 รูป"}
+        
+        for photo_data in photos_data:
+            photo_row = visit.append('photos', {})
+            image_data = photo_data.get('image')
+            
+            # Check if image_data is base64 (starts with 'data:image') or already a URL
+            if image_data and image_data.startswith('data:image/'):
+                # Convert base64 to file
+                try:
+                    import base64
+                    format_and_data = image_data.split(',', 1)
+                    if len(format_and_data) == 2:
+                        image_format = format_and_data[0].split(';')[0].split('/')[1]
+                        image_content = format_and_data[1]
+                        
+                        # Create file
+                        filename = f"checkin_{store_id}_{frappe.generate_hash(length=8)}.{image_format}"
+                        
+                        file_doc = frappe.get_doc({
+                            "doctype": "File",
+                            "file_name": filename,
+                            "content": base64.b64decode(image_content),
+                            "is_private": 0
+                        })
+                        file_doc.save()
+                        photo_row.image = file_doc.file_url
+                    else:
+                        photo_row.image = image_data
+                except Exception as file_error:
+                    frappe.log_error(f"Error processing base64 image: {str(file_error)}")
+                    photo_row.image = image_data  # Fallback to original data
+            else:
+                # Assume it's already a URL
+                photo_row.image = image_data
+            
+            photo_row.caption = photo_data.get('caption', '')
+        
+        visit.insert(ignore_permissions=True)
+        
+        return {
+            "success": True,
+            "data": {
+                "visit_id": visit.name,
+                "store_id": store_doc.name,
+                "store_name": store_doc.store_name
+            },
+            "message": "เช็คอินสำเร็จ"
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error checking in store: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "เกิดข้อผิดพลาดในการเช็คอิน"
         }
 
 
@@ -345,7 +442,7 @@ def get_agent_stores(agent_code):
         }
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_visits_summary(agent_code=None, from_date=None, to_date=None):
     """
     API: GET /api/method/crmliff.api.liff_api.get_visits_summary
@@ -364,6 +461,177 @@ def get_visits_summary(agent_code=None, from_date=None, to_date=None):
             "success": False,
             "error": str(e),
             "message": "Failed to get visits summary"
+        }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_store_detail(store_id):
+    """
+    API: GET /api/method/crmliff.api.liff_api.get_store_detail
+    ดึงรายละเอียดร้านค้าตาม ID
+    """
+    try:
+        # Get store data with related information
+        store = frappe.get_doc("CLIFF Store", store_id)
+        
+        if not store:
+            return {"success": False, "error": "ไม่พบข้อมูลร้านค้า"}
+        
+        # Get store type information
+        store_type_info = {}
+        if store.store_type:
+            store_type_doc = frappe.get_doc("CLIFF Store Type", store.store_type)
+            store_type_info = {
+                "store_type_name": store_type_doc.store_type_name,
+                "store_type_icon": store_type_doc.icon,
+                "store_type_color": store_type_doc.color
+            }
+        
+        store_data = {
+            "name": store.name,
+            "store_name": store.store_name,
+            "store_type": store.store_type,
+            "store_description": store.store_description,
+            "contact_name": store.contact_name,
+            "contact_phone": store.contact_phone,
+            "location_lat": store.location_lat,
+            "location_lng": store.location_lng,
+            "address": store.address,
+            "status": store.status,
+            "cover_image": store.cover_image,
+            "created_by_agent": store.created_by_agent,
+            "first_visit_date": store.first_visit_date,
+            "last_visit_date": store.last_visit_date,
+            "total_visits": store.total_visits,
+            "creation": store.creation,
+            "modified": store.modified,
+            **store_type_info
+        }
+        
+        return {
+            "success": True,
+            "data": store_data,
+            "message": "ดึงข้อมูลร้านค้าสำเร็จ"
+        }
+        
+    except frappe.DoesNotExistError:
+        return {"success": False, "error": "ไม่พบข้อมูลร้านค้า"}
+    except Exception as e:
+        frappe.log_error(f"Error getting store detail: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "เกิดข้อผิดพลาดในการดึงข้อมูลร้านค้า"
+        }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_store_checkin_history(store_id):
+    """
+    API: GET /api/method/crmliff.api.liff_api.get_store_checkin_history
+    ดึงประวัติการเช็คอินของร้านค้า
+    """
+    try:
+        # Get all visits for this store
+        visits = frappe.get_all(
+            "CLIFF Customer Store Visit",
+            filters={"store_name": store_id},
+            fields=[
+                "name", "visit_type", "visit_datetime", 
+                "location_lat", "location_lng", "sale_agent", "remark"
+            ],
+            order_by="visit_datetime desc"
+        )
+        
+        # Get photos for each visit
+        for visit in visits:
+            photos = frappe.get_all(
+                "CLIFF Store Visit Photo",
+                filters={"parent": visit.name},
+                fields=["image", "caption"]
+            )
+            visit["photos"] = photos
+        
+        return {
+            "success": True,
+            "data": visits,
+            "message": "ดึงประวัติการเช็คอินสำเร็จ"
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error getting store checkin history: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "เกิดข้อผิดพลาดในการดึงประวัติการเช็คอิน"
+        }
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def update_store():
+    """
+    API: POST /api/method/crmliff.api.liff_api.update_store
+    อัพเดทข้อมูลร้านค้า
+    """
+    try:
+        # Get request data
+        request_data = frappe.request.get_data()
+        
+        # Parse JSON data
+        try:
+            data = json.loads(request_data)
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "Invalid JSON format",
+                "message": "ข้อมูล JSON ไม่ถูกต้อง"
+            }
+        
+        store_id = data.get('store_id')
+        if not store_id:
+            return {"success": False, "error": "ไม่พบรหัสร้านค้า"}
+        
+        # Get store document
+        store_doc = frappe.get_doc("CLIFF Store", store_id)
+        if not store_doc:
+            return {"success": False, "error": "ไม่พบข้อมูลร้านค้า"}
+        
+        # Update store fields
+        if data.get('store_name'):
+            store_doc.store_name = data.get('store_name')
+        
+        if data.get('store_type'):
+            store_doc.store_type = data.get('store_type')
+        
+        if 'contact_name' in data:
+            store_doc.contact_name = data.get('contact_name')
+        
+        if 'contact_phone' in data:
+            store_doc.contact_phone = data.get('contact_phone')
+        
+        if 'store_description' in data:
+            store_doc.store_description = data.get('store_description')
+        
+        # Save changes
+        store_doc.save(ignore_permissions=True)
+        
+        return {
+            "success": True,
+            "data": {
+                "store_id": store_doc.name,
+                "store_name": store_doc.store_name
+            },
+            "message": "อัพเดทข้อมูลร้านสำเร็จ"
+        }
+        
+    except frappe.DoesNotExistError:
+        return {"success": False, "error": "ไม่พบข้อมูลร้านค้า"}
+    except Exception as e:
+        frappe.log_error(f"Error updating store: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "เกิดข้อผิดพลาดในการอัพเดทข้อมูลร้าน"
         }
 
 

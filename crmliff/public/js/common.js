@@ -92,11 +92,21 @@ window.CRMLIFFCommon = {
             // Step 2: Link with LINE UID (if provided)
             if (lineUID) {
                 try {
-                    const linkResponse = await fetch(`/api/method/crmliff.api.liff_api.link_line_account?agent_code=${encodeURIComponent(agentCode)}&line_uid=${encodeURIComponent(lineUID)}`, {
-                        method: 'GET'
+                    console.log(`🔗 Linking LINE UID ${lineUID} with agent ${agentCode}...`);
+                    
+                    const linkResponse = await fetch('/api/method/crmliff.api.liff_api.link_line_account', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'agent_code': agentCode,
+                            'line_uid': lineUID
+                        })
                     });
 
                     const linkResult = await linkResponse.json();
+                    console.log('🔗 Link Response:', linkResult);
                     
                     if (linkResult.message && linkResult.message.success) {
                         console.log('✅ LINE UID linked successfully');
@@ -151,16 +161,25 @@ window.CRMLIFFCommon = {
     // Initialize LIFF
     async initializeLIFF(appType = 'list') {
         try {
-            const config = appType === 'main' ? this.LIFF_CONFIG_MAIN : this.LIFF_CONFIG;
-            const liffId = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1') 
-                ? config.development 
-                : config.production;
+            // Check if in development mode
+            const isDev = window.location.hostname === 'localhost' || 
+                         window.location.hostname.includes('127.0.0.1') ||
+                         window.location.hostname.endsWith('.localhost');
             
-            await liff.init({ liffId });
-            
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return null;
+            if (isDev && !window.liff.userId) {
+                console.log('🔧 Development mode detected');
+                // In dev mode, liff is already mocked by dev-mock.js
+            } else {
+                // Production mode - use real LIFF
+                const config = appType === 'main' ? this.LIFF_CONFIG_MAIN : this.LIFF_CONFIG;
+                const liffId = isDev ? config.development : config.production;
+                
+                await liff.init({ liffId });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return null;
+                }
             }
 
             return await liff.getProfile();
@@ -174,6 +193,15 @@ window.CRMLIFFCommon = {
     // Get Current Position
     getCurrentPosition() {
         return new Promise((resolve, reject) => {
+            // Check for mock location first (development)
+            if (window.mockLocation) {
+                console.log('📍 Using mock location:', window.mockLocation);
+                resolve({
+                    coords: window.mockLocation
+                });
+                return;
+            }
+
             if (!navigator.geolocation) {
                 reject(new Error('Geolocation is not supported'));
                 return;

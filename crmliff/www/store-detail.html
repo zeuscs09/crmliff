@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bangbow Sales Kit - รายละเอียดร้านค้า</title>
+    
+    <!-- LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/crmliff/css/liff-app.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        /* Container */
+        .store-detail-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px 15px;
+        }
+
+        /* Store Image */
+        .store-image-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .store-image {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .store-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-image {
+            color: #999;
+            font-size: 48px;
+        }
+
+        /* Store Info Card */
+        .store-info-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .store-info-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .store-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            flex: 1;
+        }
+
+                 .store-action-buttons {
+             display: flex;
+             gap: 10px;
+         }
+
+         .navigate-btn {
+             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 20px;
+             font-size: 14px;
+             font-weight: 500;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             display: flex;
+             align-items: center;
+             gap: 5px;
+         }
+
+         .navigate-btn:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+         }
+
+         .checkin-btn {
+             background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 20px;
+             font-size: 14px;
+             font-weight: 500;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             display: flex;
+             align-items: center;
+             gap: 5px;
+         }
+
+         .checkin-btn:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
+         }
+
+         .edit-btn {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 20px;
+             font-size: 14px;
+             font-weight: 500;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             display: flex;
+             align-items: center;
+             gap: 5px;
+         }
+
+         .edit-btn:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+         }
+
+        .store-info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .store-info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-icon {
+            width: 20px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+
+        /* Checkin History */
+        .checkin-history-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .checkin-history-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkin-history-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Timeline Styles */
+        .checkin-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checkin-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            border-radius: 1px;
+        }
+
+        .checkin-item {
+            position: relative;
+            padding: 20px 0;
+            margin-left: 15px;
+        }
+
+        .checkin-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            z-index: 2;
+        }
+
+        .checkin-item.new-store::before {
+            background: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .checkin-item.checkin::before {
+            background: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .checkin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideInTimeline 0.5s ease forwards;
+        }
+
+        .checkin-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateX(3px);
+        }
+
+        @keyframes slideInTimeline {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .checkin-item:nth-child(1) .checkin-card { animation-delay: 0.1s; }
+        .checkin-item:nth-child(2) .checkin-card { animation-delay: 0.2s; }
+        .checkin-item:nth-child(3) .checkin-card { animation-delay: 0.3s; }
+        .checkin-item:nth-child(4) .checkin-card { animation-delay: 0.4s; }
+        .checkin-item:nth-child(5) .checkin-card { animation-delay: 0.5s; }
+
+        .checkin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .checkin-type {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkin-type.new-store {
+            color: #28a745;
+        }
+
+        .checkin-type.checkin {
+            color: #667eea;
+        }
+
+        .checkin-datetime {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .checkin-date {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .checkin-time {
+            color: #999;
+            margin-top: 2px;
+        }
+        
+        .checkin-remark {
+            font-size: 14px;
+            color: #555;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 3px solid #667eea;
+            font-style: italic;
+        }
+        
+        .checkin-remark i {
+            margin-right: 6px;
+            color: #667eea;
+        }
+
+        .checkin-photos {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .checkin-photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .checkin-photo:hover {
+            border-color: #667eea;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        .checkin-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .checkin-photo::after {
+            content: '\f00e';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .checkin-photo:hover::after {
+            opacity: 1;
+        }
+
+        /* Checkin Modal Styles */
+        .store-info-summary {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .store-info-summary h4 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .location-display {
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .photo-preview {
+            margin-top: 10px;
+        }
+        
+        .photo-preview-large {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .photo-capture-container {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .photo-capture-container:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .btn-photo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-photo:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Edit Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* Loading States */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+                 /* Responsive */
+         @media (max-width: 480px) {
+             .store-detail-container {
+                 padding: 15px 10px;
+             }
+             
+             .page-header {
+                 padding: 15px;
+             }
+             
+             .store-info-card,
+             .checkin-history-card {
+                 padding: 15px;
+             }
+             
+             .store-action-buttons {
+                 flex-direction: column;
+                 gap: 8px;
+             }
+             
+             .navigate-btn,
+             .checkin-btn,
+             .edit-btn {
+                 width: 100%;
+                 justify-content: center;
+             }
+             
+             /* Timeline responsive */
+             .checkin-timeline {
+                 padding-left: 20px;
+             }
+             
+             .checkin-timeline::before {
+                 left: 10px;
+             }
+             
+             .checkin-item {
+                 margin-left: 10px;
+                 padding: 15px 0;
+             }
+             
+             .checkin-item::before {
+                 left: -15px;
+                 width: 10px;
+                 height: 10px;
+                 top: 20px;
+             }
+             
+             .checkin-card {
+                 padding: 12px;
+             }
+             
+             .checkin-header {
+                 flex-direction: column;
+                 align-items: flex-start;
+                 gap: 8px;
+             }
+             
+             .checkin-type {
+                 font-size: 14px;
+             }
+             
+             .checkin-datetime {
+                 font-size: 11px;
+                 text-align: left;
+             }
+             
+             .checkin-photo {
+                 width: 60px;
+                 height: 60px;
+             }
+         }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>กำลังโหลด...</p>
+        </div>
+    </div>
+
+    <!-- Login/Verification Screen -->
+    <div id="login-screen" class="screen hidden">
+        <div class="header">
+            <h1><i class="fas fa-store"></i> Bangbow Sales Kit</h1>
+            <p>รายละเอียดร้านค้า</p>
+        </div>
+        
+        <div class="login-content">
+            <div class="profile-section">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="user-name">กำลังโหลดข้อมูล...</h2>
+            </div>
+            
+            <div class="verification-form">
+                <h3>ยืนยันตัวตน</h3>
+                <p id="verification-message">กรุณากรอกรหัสพนักงานเซลส์เพื่อเชื่อมโยงกับบัญชี LINE ของคุณ</p>
+                <div class="form-group">
+                    <label for="agent-code">รหัสพนักงานเซลส์</label>
+                    <input type="text" id="agent-code" placeholder="เช่น S001, S002">
+                </div>
+                <button id="verify-btn" class="btn btn-primary">
+                    <i class="fas fa-check"></i> ยืนยันตัวตน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Store Detail Screen -->
+    <div id="main-screen" class="screen hidden">
+        <!-- Page Header -->
+        <div class="page-header">
+            <button id="back-btn" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="page-title">รายละเอียดร้านค้า</h1>
+        </div>
+
+        <div class="store-detail-container">
+            <!-- Store Image -->
+            <div class="store-image-section">
+                <div class="store-image" id="store-image-container">
+                    <i class="fas fa-image no-image"></i>
+                </div>
+            </div>
+
+            <!-- Store Info -->
+            <div class="store-info-card">
+                <div class="store-info-header">
+                    <h2 class="store-name" id="store-name">กำลังโหลด...</h2>
+                    <div class="store-action-buttons">
+                        <button id="navigate-store-btn" class="navigate-btn">
+                            <i class="fas fa-directions"></i> นำทาง
+                        </button>
+                        <button id="checkin-store-btn" class="checkin-btn">
+                            <i class="fas fa-map-marker-alt"></i> เช็คอิน
+                        </button>
+                        <button id="edit-store-btn" class="edit-btn hidden">
+                            <i class="fas fa-edit"></i> แก้ไข
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="store-info-content">
+                    <!-- Store info will be populated here -->
+                </div>
+            </div>
+
+            <!-- Checkin History -->
+            <div class="checkin-history-card">
+                <div class="checkin-history-header">
+                    <i class="fas fa-history"></i>
+                    <h3>ประวัติการเช็คอิน</h3>
+                </div>
+                
+                <div id="checkin-history-content">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>กำลังโหลดประวัติ...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Store Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> แก้ไขข้อมูลร้าน</h3>
+                <button id="close-edit" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form">
+                    <div class="form-group">
+                        <label for="edit-store-name">ชื่อร้าน <span style="color: #e53e3e;">*</span></label>
+                        <input type="text" id="edit-store-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-store-type">ประเภทร้าน</label>
+                        <select id="edit-store-type">
+                            <option value="">กำลังโหลด...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-contact-name">ชื่อผู้ติดต่อ</label>
+                        <input type="text" id="edit-contact-name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-contact-phone">เบอร์โทร</label>
+                        <input type="tel" id="edit-contact-phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-store-description">รายละเอียดเพิ่มเติม</label>
+                        <textarea id="edit-store-description" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-edit-btn" class="btn btn-secondary">ยกเลิก</button>
+                <button id="save-edit-btn" class="btn btn-primary">
+                    <i class="fas fa-save"></i> บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo View Modal -->
+    <div id="photo-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ดูรูปภาพ</h3>
+                <button id="close-photo" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 0;">
+                <img id="photo-view" src="" alt="รูปภาพ" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Check-in Modal -->
+    <div id="checkin-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-map-marker-alt"></i> เช็คอิน</h3>
+                <button id="close-checkin" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="checkin-store-info" class="store-info-summary">
+                    <!-- Store info will be populated here -->
+                </div>
+                
+                <div class="form-group">
+                    <label>📍 ตำแหน่งปัจจุบัน</label>
+                    <div id="checkin-location-display" class="location-display">
+                        กำลังหาตำแหน่ง...
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>📝 หมายเหตุ (ไม่บังคับ)</label>
+                    <textarea id="checkin-remark" placeholder="เช่น: เจ้าของร้านให้ความสนใจในสินค้าใหม่..." rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>📷 ถ่ายรูป</label>
+                    <div class="photo-capture-container" id="checkin-photo-capture-container">
+                        <input type="file" id="checkin-photo" accept="image/*" capture="environment" style="display: none;">
+                        <div id="checkin-photo-preview" class="photo-preview hidden">
+                            <img id="checkin-preview-image" class="photo-preview-large" src="" alt="Preview">
+                            <div>
+                                <button id="checkin-retake-btn" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> ถ่ายใหม่
+                                </button>
+                            </div>
+                        </div>
+                        <div id="checkin-photo-capture-prompt">
+                            <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                            <p style="color: #666; margin-bottom: 20px;">คลิกเพื่อถ่ายรูปหน้าร้าน</p>
+                            <button id="checkin-take-photo-btn" class="btn btn-photo">
+                                <i class="fas fa-camera"></i> ถ่ายรูป
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="checkin-cancel-btn" class="btn btn-secondary">ยกเลิก</button>
+                <button id="checkin-submit-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-check"></i> เช็คอิน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> ข้อผิดพลาด</h3>
+                <button id="close-error" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</p>
+            </div>
+            <div class="modal-footer">
+                <button id="error-ok-btn" class="btn btn-primary">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/assets/crmliff/js/dev-mock.js?v=1.0.2"></script>
+    <script src="/assets/crmliff/js/common.js?v=1.0.1"></script>
+    <script src="/assets/crmliff/js/store-detail.js?v=1.0.1"></script>
+</body>
+</html> 

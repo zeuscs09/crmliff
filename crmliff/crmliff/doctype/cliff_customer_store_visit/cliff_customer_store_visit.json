@@ -2,27 +2,21 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "naming_series:",
- "creation": "2024-01-15 10:45:00.000000",
+ "creation": "2024-01-15 10:45:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "store_name",
   "sale_agent",
   "visit_datetime",
   "column_break_4",
   "visit_type",
-  "store_link",
-  "section_break_5",
-  "store_type",
-  "section_break_6",
-  "store_name",
-  "store_description",
-  "column_break_9",
-  "contact_name",
-  "contact_phone",
+  "remark",
   "section_break_12",
   "location_lat",
+  "column_break_yqor",
   "location_lng",
   "section_break_15",
   "photos"
@@ -32,7 +26,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "CSV-YYYY-MM-.####",
+   "options": "CSV-.YYYY.-.MM.-.####",
    "reqd": 1
   },
   {
@@ -44,9 +38,9 @@
    "reqd": 1
   },
   {
+   "default": "now",
    "fieldname": "visit_datetime",
    "fieldtype": "Datetime",
-   "default": "now",
    "in_list_view": 1,
    "label": "Visit Date & Time",
    "reqd": 1
@@ -56,68 +50,23 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "New Store",
+   "description": "\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e01\u0e32\u0e23\u0e40\u0e22\u0e35\u0e48\u0e22\u0e21\u0e0a\u0e21: \u0e23\u0e49\u0e32\u0e19\u0e43\u0e2b\u0e21\u0e48\u0e2b\u0e23\u0e37\u0e2d\u0e40\u0e0a\u0e47\u0e04\u0e2d\u0e34\u0e19",
    "fieldname": "visit_type",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Visit Type",
    "options": "New Store\nCheck-in",
-   "default": "New Store",
-   "reqd": 1,
-   "description": "ประเภทการเยี่ยมชม: ร้านใหม่หรือเช็คอิน"
-  },
-  {
-   "fieldname": "store_link",
-   "fieldtype": "Link",
-   "label": "Store",
-   "options": "CLIFF Store",
-   "description": "เลือกร้านที่มีอยู่แล้ว (กรณี Check-in)",
-   "depends_on": "eval:doc.visit_type==='Check-in'"
-  },
-  {
-   "fieldname": "section_break_5",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "store_type",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Store Type",
-   "options": "CLIFF Store Type",
    "reqd": 1
   },
   {
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break",
-   "label": "Store Information"
-  },
-  {
+   "description": "\u0e0a\u0e37\u0e48\u0e2d\u0e23\u0e49\u0e32\u0e19 (\u0e44\u0e21\u0e48\u0e1a\u0e31\u0e07\u0e04\u0e31\u0e1a)",
    "fieldname": "store_name",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Store Name",
-   "description": "ชื่อร้าน (ไม่บังคับ)"
-  },
-  {
-   "fieldname": "store_description",
-   "fieldtype": "Small Text",
-   "label": "Store Description",
-   "description": "รายละเอียดเพิ่มเติมเกี่ยวกับร้าน"
-  },
-  {
-   "fieldname": "column_break_9",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "contact_name",
-   "fieldtype": "Data",
-   "label": "Contact Name",
-   "description": "ชื่อผู้ติดต่อ (ไม่บังคับ)"
-  },
-  {
-   "fieldname": "contact_phone",
-   "fieldtype": "Phone",
-   "label": "Contact Phone",
-   "description": "เบอร์โทรผู้ติดต่อ (ไม่บังคับ)"
+   "options": "CLIFF Store",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_12",
@@ -128,14 +77,14 @@
    "fieldname": "location_lat",
    "fieldtype": "Float",
    "label": "Latitude",
-   "precision": 6,
+   "precision": "6",
    "reqd": 1
   },
   {
    "fieldname": "location_lng",
    "fieldtype": "Float",
-   "label": "Longitude", 
-   "precision": 6,
+   "label": "Longitude",
+   "precision": "6",
    "reqd": 1
   },
   {
@@ -149,13 +98,22 @@
    "label": "Photos",
    "options": "CLIFF Store Visit Photo",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_yqor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Small Text",
+   "label": "Remark"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-15 10:45:00.000000",
+ "modified": "2025-06-08 15:59:23.915449",
  "modified_by": "Administrator",
- "module": "CRMLiff",
+ "module": "Crmliff",
  "name": "CLIFF Customer Store Visit",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
@@ -202,4 +160,4 @@
  "states": [],
  "title_field": "store_name",
  "track_changes": 1
-} 
+}

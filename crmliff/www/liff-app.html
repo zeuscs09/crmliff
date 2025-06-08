@@ -104,11 +104,20 @@
         /* Step Content Styles */
         .step-content {
             display: none;
-            padding: 20px 20px 120px 20px; /* Extra bottom padding for navigation */
+            padding: 16px 12px 100px 12px; /* Extra bottom padding for navigation */
             min-height: calc(100vh - 180px);
-            max-width: 500px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0;
             overflow-y: auto;
+        }
+        
+        /* Responsive design for larger screens */
+        @media (min-width: 768px) {
+            .step-content {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 16px 20px 100px 20px;
+            }
         }
         
         .step-content.active {
@@ -117,20 +126,20 @@
         
         .step-title {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #333;
         }
         
         .step-title h2 {
-            margin: 0 0 10px 0;
-            font-size: 24px;
+            margin: 0 0 8px 0;
+            font-size: 22px;
             font-weight: 600;
         }
         
         .step-title p {
             margin: 0;
             color: #666;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         /* Navigation Buttons */
@@ -140,12 +149,22 @@
             left: 0;
             right: 0;
             background: white;
-            padding: 15px 20px;
+            padding: 15px 12px;
             padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
             display: flex;
             gap: 10px;
             z-index: 1000;
+        }
+        
+        @media (min-width: 768px) {
+            .step-navigation {
+                padding: 15px 20px;
+                max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 12px 12px 0 0;
+            }
         }
         
         .btn-nav {
@@ -176,39 +195,45 @@
         
         /* Map specific styles for step 1 */
         .map-step-container {
-            height: 50vh;
-            max-height: 400px;
-            min-height: 250px;
+            height: 45vh;
+            max-height: 350px;
+            min-height: 200px;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .location-info-card {
             background: white;
-            padding: 20px;
+            padding: 16px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .location-info-card h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
             color: #333;
-            font-size: 18px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .location-info-card p {
-            margin: 5px 0;
+            margin: 4px 0;
             color: #666;
+            font-size: 14px;
+            line-height: 1.4;
         }
         
         .location-accuracy {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 13px;
         }
         
         .accuracy-dot {
@@ -264,11 +289,41 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .store-type-card.selected {
-            border-color: #2196F3;
-            background: #f3f8ff;
+            /* Selected styles are handled by JavaScript for mobile compatibility */
+        }
+        
+        .store-type-card.selected::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--store-type-color, #2196F3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .store-type-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
         }
         
         .store-type-card .icon {
@@ -329,41 +384,162 @@
             object-fit: cover;
             border-radius: 8px;
         }
-        
-        /* Navigation Tabs */
-        .nav-tabs {
+
+        /* Success Screen Styles */
+        .success-content {
+            text-align: center;
+            padding: 40px 20px;
+            min-height: 60vh;
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            padding: 0;
-            margin: 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        
-        .nav-tab {
-            flex: 1;
-            padding: 12px 10px;
-            background: none;
-            border: none;
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        .success-icon i {
+            font-size: 40px;
+            color: white;
+        }
+
+        @keyframes successPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 35px rgba(76, 175, 80, 0.4);
+            }
+        }
+
+        .success-content h2 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+        }
+
+        .success-content p {
             color: #666;
-            font-size: 14px;
+            font-size: 16px;
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        /* Success Screen Buttons */
+        .success-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            min-height: 55px;
         }
-        
-        .nav-tab:hover {
-            background: #e9ecef;
-            color: #667eea;
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-        
-        .nav-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
             background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
-        .nav-tab i {
-            margin-right: 5px;
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn i {
+            font-size: 18px;
+        }
+
+        /* Close Button */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: #ccc;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .close-btn i {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .close-btn:hover i {
+            color: #333;
+        }
+
+        /* Desktop styles for success screen */
+        @media (min-width: 768px) {
+            .success-buttons {
+                flex-direction: row;
+                gap: 20px;
+                max-width: 400px;
+            }
+
+            .btn {
+                flex: 1;
+                min-width: 160px;
+            }
         }
 
         /* Responsive Design */
@@ -375,6 +551,58 @@
             
             .step-title h2 {
                 font-size: 20px;
+            }
+
+            /* Success screen responsive */
+            .success-content {
+                padding: 30px 15px;
+                min-height: 70vh;
+            }
+
+            .success-icon {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 20px;
+            }
+
+            .success-icon i {
+                font-size: 35px;
+            }
+
+            .success-content h2 {
+                font-size: 24px;
+            }
+
+            .success-content p {
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+
+            .success-buttons {
+                gap: 12px;
+                max-width: 280px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
+                min-height: 50px;
+            }
+
+            .btn i {
+                font-size: 16px;
+            }
+
+            /* Close button responsive */
+            .close-btn {
+                top: 15px;
+                right: 15px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .close-btn i {
+                font-size: 14px;
             }
             
             .step-title p {
@@ -449,15 +677,7 @@
 
     <!-- Main App Screen with Steps -->
     <div id="main-screen" class="screen hidden">
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab" id="nav-list" onclick="window.location.href='/list-store'">
-                <i class="fas fa-list"></i> รายการร้าน
-            </button>
-            <button class="nav-tab active" id="nav-create">
-                <i class="fas fa-plus"></i> สร้างใหม่
-            </button>
-        </div>
+
 
         <!-- Progress Bar -->
         <div class="progress-container">
@@ -490,8 +710,14 @@
             
             <div class="location-info-card">
                 <h3><i class="fas fa-location-arrow"></i> ตำแหน่งปัจจุบัน</h3>
-                <p id="current-address">กำลังหาตำแหน่ง...</p>
-                <p><strong>พิกัด:</strong> <span id="current-coordinates">-</span></p>
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 14px; color: #666; margin-bottom: 2px;">ที่อยู่:</div>
+                    <div id="current-address" style="font-size: 14px; color: #333; line-height: 1.3;">กำลังหาตำแหน่ง...</div>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 14px; color: #666; margin-bottom: 2px;">พิกัด:</div>
+                    <div id="current-coordinates" style="font-size: 13px; color: #666; font-family: monospace;">-</div>
+                </div>
                 <div class="location-accuracy">
                     <div id="accuracy-dot" class="accuracy-dot accuracy-medium"></div>
                     <span id="accuracy-text">ความแม่นยำ: ปานกลาง</span>
@@ -535,29 +761,9 @@
             <div class="store-type-section">
                 <h3><i class="fas fa-store"></i> เลือกประเภทร้าน</h3>
                 <div class="store-type-grid" id="store-type-grid">
-                    <div class="store-type-card" data-type="food">
-                        <div class="icon">🍽️</div>
-                        <div class="name">ร้านอาหาร</div>
-                    </div>
-                    <div class="store-type-card" data-type="retail">
-                        <div class="icon">🏪</div>
-                        <div class="name">ร้านค้าปลีก</div>
-                    </div>
-                    <div class="store-type-card" data-type="grocery">
-                        <div class="icon">🛒</div>
-                        <div class="name">ร้านโชห่วย</div>
-                    </div>
-                    <div class="store-type-card" data-type="drink">
-                        <div class="icon">☕</div>
-                        <div class="name">ร้านเครื่องดื่ม</div>
-                    </div>
-                    <div class="store-type-card" data-type="convenience">
-                        <div class="icon">🏬</div>
-                        <div class="name">ร้านสะดวกซื้อ</div>
-                    </div>
-                    <div class="store-type-card" data-type="pharmacy">
-                        <div class="icon">💊</div>
-                        <div class="name">ร้านยา</div>
+                    <!-- Store types will be loaded dynamically from API -->
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #666;">
+                        <i class="fas fa-spinner fa-spin"></i> กำลังโหลดประเภทร้าน...
                     </div>
                 </div>
             </div>
@@ -567,12 +773,12 @@
         <div id="step-3" class="step-content">
             <div class="step-title">
                 <h2><i class="fas fa-info-circle"></i> ข้อมูลร้าน</h2>
-                <p>กรอกข้อมูลเพิ่มเติมของร้าน (ไม่บังคับ)</p>
+                <p>กรอกข้อมูลร้าน (ชื่อร้านจำเป็นต้องกรอก)</p>
             </div>
             
             <div class="form-group">
-                <label for="store-name-step3">ชื่อร้าน</label>
-                <input type="text" id="store-name-step3" placeholder="เช่น ร้านแม่สมศรี">
+                <label for="store-name-step3">ชื่อร้าน <span style="color: #e53e3e;">*</span></label>
+                <input type="text" id="store-name-step3" placeholder="เช่น ร้านแม่สมศรี" required>
             </div>
             <div class="form-group">
                 <label for="contact-name-step3">ชื่อผู้ติดต่อ</label>
@@ -654,17 +860,20 @@
     <!-- Success Screen -->
     <div id="success-screen" class="screen hidden">
         <div class="success-content">
+            <button id="close-success-btn" class="close-btn">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="success-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
             <h2>บันทึกสำเร็จ!</h2>
             <p>ข้อมูลร้านค้าได้ถูกบันทึกเรียบร้อยแล้ว</p>
-            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-                <button id="view-stores-btn" class="btn btn-secondary" onclick="window.location.href='/list-store'">
-                    <i class="fas fa-list"></i> ดูรายการร้าน
-                </button>
+            <div class="success-buttons">
                 <button id="new-visit-btn" class="btn btn-primary">
                     <i class="fas fa-plus"></i> เก็บข้อมูลร้านใหม่
+                </button>
+                <button id="view-stores-btn" class="btn btn-secondary" onclick="window.location.href='/list-store'">
+                    <i class="fas fa-list"></i> ดูรายการร้าน
                 </button>
             </div>
         </div>
@@ -690,7 +899,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- JavaScript -->
-    <script src="/assets/crmliff/js/common.js?v=1.0.0"></script>
-    <script src="/assets/crmliff/js/liff-app.js?v=1.0.3"></script>
+    <script src="/assets/crmliff/js/dev-mock.js?v=1.0.1"></script>
+    <script src="/assets/crmliff/js/common.js?v=1.0.1"></script>
+    <script src="/assets/crmliff/js/liff-app.js?v=1.0.5"></script>
 </body>
 </html> 

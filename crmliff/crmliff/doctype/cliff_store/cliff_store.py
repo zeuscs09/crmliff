@@ -7,11 +7,12 @@ from frappe.model.document import Document
 class CLIFFStore(Document):
 	def validate(self):
 		"""Validate the store data"""
-		if not self.store_name:
-			frappe.throw("Store Name is required")
+		# if not self.store_name:
+		# 	frappe.throw("Store Name is required")
 		
 		if not self.location_lat or not self.location_lng:
 			frappe.throw("Location coordinates are required")
+	
 	
 	def before_save(self):
 		"""Set first visit date when creating new store"""

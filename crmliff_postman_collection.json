@@ -1,0 +1,553 @@
+{
+	"info": {
+		"_postman_id": "crmliff-api-collection",
+		"name": "CRM LIFF API Collection",
+		"description": "Complete API collection for CRM LIFF application with LINE integration.\n\n🚀 **NEW FEATURES:**\n• Separate APIs for creating stores and checking in\n• Enhanced response validation\n• Base64 image support\n\n📋 **TESTING ORDER:**\n1. Health Check\n2. Get Store Types\n3. Verify Agent\n4. Create Store (saves store_id to globals)\n5. Check-in Store (uses saved store_id)\n6. Get Agent Stores\n\n⚙️ **SETUP:**\nSet base_url variable to your Frappe site URL (e.g., http://crmliff.localhost)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has success field\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.health_check",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.health_check"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Store Types",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has store types data\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_store_types",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.get_store_types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Agent S001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Agent verification successful\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "agent_code",
+							"value": "S001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.verify_agent",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.verify_agent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Agent T001",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "agent_code",
+							"value": "T001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.verify_agent",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.verify_agent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Link LINE Account - S001",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "agent_code",
+							"value": "S001",
+							"type": "text"
+						},
+						{
+							"key": "line_uid",
+							"value": "U123456789abcdef",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.link_line_account",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.link_line_account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Agent Info by LINE UID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_info?line_uid=U123456789abcdef",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.get_agent_info"
+					],
+					"query": [
+						{
+							"key": "line_uid",
+							"value": "U123456789abcdef"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Store",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Store created successfully\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    if (jsonData.message && jsonData.message.success) {",
+							"        pm.expect(jsonData.message).to.have.property('data');",
+							"        pm.expect(jsonData.message.data).to.have.property('visit_id');",
+							"        pm.expect(jsonData.message.data).to.have.property('store_id');",
+							"        ",
+							"        // Store values for next requests",
+							"        pm.globals.set('visit_id', jsonData.message.data.visit_id);",
+							"        pm.globals.set('store_id', jsonData.message.data.store_id);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"agent_code\": \"S001\",\n    \"location_lat\": 13.7563,\n    \"location_lng\": 100.5018,\n    \"address\": \"123 Test Street, Bangkok\",\n    \"store_type\": \"FOOD\",\n    \"store_name\": \"ร้านทดสอบ Postman\",\n    \"store_description\": \"ร้านทดสอบสำหรับ API testing\",\n    \"contact_name\": \"คุณทดสอบ\",\n    \"contact_phone\": \"+66812345678\",\n    \"cover_image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n    \"photos\": [\n        {\n            \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n            \"caption\": \"รูปหน้าร้าน\"\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.create_store",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.create_store"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check-in Store",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure we have a store_id from previous Create Store request",
+							"if (!pm.globals.get('store_id')) {",
+							"    console.log('Warning: No store_id found. Please run \"Create Store\" first.');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Check-in successful\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    if (jsonData.message && jsonData.message.success) {",
+							"        pm.expect(jsonData.message).to.have.property('data');",
+							"        pm.expect(jsonData.message.data).to.have.property('visit_id');",
+							"        pm.expect(jsonData.message.data).to.have.property('store_id');",
+							"        pm.expect(jsonData.message.data).to.have.property('store_name');",
+							"        console.log('Check-in successful for store:', jsonData.message.data.store_name);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"agent_code\": \"S001\",\n    \"store_id\": \"{{store_id}}\",\n    \"location_lat\": 13.7565,\n    \"location_lng\": 100.5020,\n    \"photos\": [\n        {\n            \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n            \"caption\": \"การเช็คอิน\"\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.checkin_store",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.checkin_store"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Agent Stores - S001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has stores data\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"    if (jsonData.message && jsonData.message.success) {",
+							"        pm.expect(jsonData.message).to.have.property('data');",
+							"        pm.expect(jsonData.message.data).to.have.property('stores');",
+							"        pm.expect(jsonData.message.data.stores).to.be.an('array');",
+							"        console.log('Found', jsonData.message.data.stores.length, 'stores for agent S001');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_stores?agent_code=S001",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.get_agent_stores"
+					],
+					"query": [
+						{
+							"key": "agent_code",
+							"value": "S001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Agent Stores - T001",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_stores?agent_code=T001",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.get_agent_stores"
+					],
+					"query": [
+						{
+							"key": "agent_code",
+							"value": "T001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Visits Summary - S001",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_visits_summary?agent_code=S001",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.get_visits_summary"
+					],
+					"query": [
+						{
+							"key": "agent_code",
+							"value": "S001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Submit Store Visit (Alternative API)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "line_uid",
+							"value": "U123456789abcdef",
+							"type": "text"
+						},
+						{
+							"key": "store_name",
+							"value": "ร้านทดสอบ Alternative API",
+							"type": "text"
+						},
+						{
+							"key": "store_type",
+							"value": "RETAIL001",
+							"type": "text"
+						},
+						{
+							"key": "store_description",
+							"value": "ทดสอบ submit_store_visit API",
+							"type": "text"
+						},
+						{
+							"key": "contact_name",
+							"value": "คุณทดสอบ",
+							"type": "text"
+						},
+						{
+							"key": "contact_phone",
+							"value": "0887654321",
+							"type": "text"
+						},
+						{
+							"key": "location",
+							"value": "{\"lat\": 13.7563, \"lng\": 100.5018}",
+							"type": "text"
+						},
+						{
+							"key": "images",
+							"value": "[{\"base64\": \"data:image/jpeg;base64,test\", \"caption\": \"หน้าร้าน\"}]",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.submit_store_visit",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"method",
+						"crmliff.api.liff_api.submit_store_visit"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://crmliff.localhost",
+			"type": "string"
+		}
+	]
+} 

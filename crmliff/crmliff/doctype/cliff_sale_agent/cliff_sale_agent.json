@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:agent_code",
- "creation": "2024-01-15 10:15:00.000000",
+ "creation": "2024-01-15 10:15:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -18,64 +18,65 @@
  ],
  "fields": [
   {
+   "description": "\u0e23\u0e2b\u0e31\u0e2a\u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e40\u0e0b\u0e25\u0e2a\u0e4c \u0e40\u0e0a\u0e48\u0e19 S001, S002",
    "fieldname": "agent_code",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Agent Code",
    "reqd": 1,
-   "unique": 1,
-   "description": "รหัสพนักงานเซลส์ เช่น S001, S002"
+   "unique": 1
   },
   {
+   "description": "\u0e0a\u0e37\u0e48\u0e2d\u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e40\u0e0b\u0e25\u0e2a\u0e4c",
    "fieldname": "agent_name",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Agent Name",
-   "reqd": 1,
-   "description": "ชื่อพนักงานเซลส์"
+   "reqd": 1
   },
   {
    "fieldname": "column_break_3",
    "fieldtype": "Column Break"
   },
   {
+   "description": "LINE User ID \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e21\u0e1b\u0e01\u0e31\u0e1a LIFF",
    "fieldname": "line_uid",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "LINE UID",
-   "unique": 1,
-   "description": "LINE User ID สำหรับแมปกับ LIFF"
+   "unique": 1
   },
   {
+   "default": "+66",
+   "description": "\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c",
    "fieldname": "phone",
-   "fieldtype": "Phone",
-   "label": "Phone Number",
-   "description": "เบอร์โทรศัพท์"
+   "fieldtype": "Data",
+   "label": "Phone Number"
   },
   {
    "fieldname": "section_break_6",
    "fieldtype": "Section Break"
   },
   {
+   "description": "\u0e40\u0e02\u0e15\u0e1e\u0e37\u0e49\u0e19\u0e17\u0e35\u0e48\u0e23\u0e31\u0e1a\u0e1c\u0e34\u0e14\u0e0a\u0e2d\u0e1a",
    "fieldname": "territory",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Territory",
-   "options": "Territory",
-   "description": "เขตพื้นที่รับผิดชอบ"
+   "options": "Territory"
   },
   {
+   "default": "1",
    "fieldname": "is_active",
    "fieldtype": "Check",
-   "default": 1,
    "in_list_view": 1,
    "label": "Is Active"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-15 10:15:00.000000",
+ "modified": "2025-06-08 15:07:56.060730",
  "modified_by": "Administrator",
- "module": "CRMLiff",
+ "module": "Crmliff",
  "name": "CLIFF Sale Agent",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
@@ -111,12 +112,25 @@
    "report": 1,
    "role": "Sales User",
    "share": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest",
+   "share": 1,
+   "write": 1
   }
  ],
  "quick_entry": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
  "title_field": "agent_name",
  "track_changes": 1
-} 
+}

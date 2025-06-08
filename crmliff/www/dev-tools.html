@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM LIFF - Development Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .tool-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .tool-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        input, select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            font-family: inherit;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 CRM LIFF Development Tools</h1>
+        
+        <!-- Mock Agent Section -->
+        <div class="tool-section">
+            <h3>👤 Mock Agent</h3>
+            <div class="form-group">
+                <label>Agent Code:</label>
+                <input type="text" id="mock-agent-code" placeholder="S001" value="S001">
+            </div>
+            <div class="form-group">
+                <label>Agent Name:</label>
+                <input type="text" id="mock-agent-name" placeholder="สมชาย ใจดี" value="สมชาย ใจดี">
+            </div>
+            <button class="btn" onclick="setMockAgent()">Set Mock Agent</button>
+            <button class="btn btn-secondary" onclick="showCurrentAgent()">Show Current</button>
+            <button class="btn btn-danger" onclick="clearMockAgent()">Clear</button>
+            <div id="agent-status"></div>
+        </div>
+        
+        <!-- Mock LINE UID Section -->
+        <div class="tool-section">
+            <h3>💬 Mock LINE UID</h3>
+            <div class="form-group">
+                <label>Preset LINE UIDs:</label>
+                <select id="lineuid-preset" onchange="usePresetLineUID()">
+                    <option value="">Select preset...</option>
+                    <option value="test-s001">Test User S001 (U123456789abcdef01)</option>
+                    <option value="test-t001">Test User T001 (U123456789abcdef02)</option>
+                    <option value="guest">Guest User (Uguest123456789abc)</option>
+                    <option value="demo">Demo User (Udemo987654321xyz)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Custom LINE UID:</label>
+                <input type="text" id="mock-line-uid" placeholder="U123456789abcdef" value="U123456789abcdef01">
+            </div>
+            <button class="btn" onclick="setMockLineUID()">Set Mock LINE UID</button>
+            <button class="btn btn-secondary" onclick="showCurrentLineUID()">Show Current</button>
+            <button class="btn" onclick="testLinkLineAccount()">Test Link Account</button>
+            <button class="btn btn-secondary" onclick="testGetAgentInfo()">Test Get Agent Info</button>
+            <button class="btn" onclick="testFullVerificationFlow()">🔬 Test Full Verification</button>
+            <button class="btn btn-danger" onclick="clearMockLineUID()">Clear</button>
+            <div id="lineuid-status"></div>
+        </div>
+
+        <!-- Mock Location Section -->
+        <div class="tool-section">
+            <h3>📍 Mock Location</h3>
+            <div class="form-group">
+                <label>Preset Locations:</label>
+                <select id="location-preset" onchange="usePresetLocation()">
+                    <option value="">Select preset...</option>
+                    <option value="bts-asok">BTS อโศก (13.7365, 100.5618)</option>
+                    <option value="central-world">Central World (13.7469, 100.5389)</option>
+                    <option value="chatuchak">จตุจักร (13.7992, 100.5495)</option>
+                    <option value="siam">สยาม (13.7456, 100.5342)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Custom Latitude:</label>
+                <input type="number" id="mock-lat" placeholder="13.7563" step="0.000001" value="13.7563">
+            </div>
+            <div class="form-group">
+                <label>Custom Longitude:</label>
+                <input type="number" id="mock-lng" placeholder="100.5018" step="0.000001" value="100.5018">
+            </div>
+            <button class="btn" onclick="setMockLocation()">Set Mock Location</button>
+            <button class="btn btn-secondary" onclick="showCurrentLocation()">Show Current</button>
+            <div id="location-status"></div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="tool-section">
+            <h3>🚀 Quick Actions</h3>
+            <button class="btn" onclick="openListStore()">Open List Store</button>
+            <button class="btn" onclick="openLiffApp()">Open LIFF App</button>
+            <button class="btn btn-secondary" onclick="clearAllData()">Clear All Data</button>
+        </div>
+        
+        <!-- Console Output -->
+        <div class="tool-section">
+            <h3>📋 Console Output</h3>
+            <div id="console-output" class="code" style="height: 200px; overflow-y: auto; white-space: pre-wrap;"></div>
+            <button class="btn btn-secondary" onclick="clearConsole()">Clear Console</button>
+        </div>
+    </div>
+
+    <script src="/assets/crmliff/js/dev-mock.js"></script>
+    <script>
+        // Override console.log to show in our dev tools
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            consoleOutput.textContent += new Date().toTimeString().substr(0,8) + ' - ' + message + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function setMockAgent() {
+            const code = document.getElementById('mock-agent-code').value;
+            const name = document.getElementById('mock-agent-name').value;
+            
+            if (!code || !name) {
+                showStatus('agent-status', 'Please fill all fields', 'error');
+                return;
+            }
+            
+            const mockAgent = {
+                name: code,
+                agent_code: code,
+                agent_name: name
+            };
+            
+            DEV_TOOLS.setMockAgent(mockAgent);
+            showStatus('agent-status', `Mock agent set: ${code} - ${name}`, 'success');
+        }
+        
+        function showCurrentAgent() {
+            const agent = DEV_TOOLS.getMockAgent();
+            if (agent) {
+                showStatus('agent-status', `Current: ${agent.agent_code} - ${agent.agent_name}`, 'success');
+            } else {
+                showStatus('agent-status', 'No mock agent set', 'error');
+            }
+        }
+        
+        function clearMockAgent() {
+            DEV_TOOLS.clearMockAgent();
+            showStatus('agent-status', 'Mock agent cleared', 'success');
+        }
+        
+        // Mock LINE UID functions
+        function usePresetLineUID() {
+            const preset = document.getElementById('lineuid-preset').value;
+            const lineUIDs = {
+                'test-s001': 'U123456789abcdef01',
+                'test-t001': 'U123456789abcdef02',
+                'guest': 'Uguest123456789abc',
+                'demo': 'Udemo987654321xyz'
+            };
+            
+            if (lineUIDs[preset]) {
+                document.getElementById('mock-line-uid').value = lineUIDs[preset];
+                setMockLineUID();
+            }
+        }
+        
+        function setMockLineUID() {
+            const lineUID = document.getElementById('mock-line-uid').value.trim();
+            
+            if (!lineUID) {
+                showStatus('lineuid-status', 'Please enter LINE UID', 'error');
+                return;
+            }
+            
+            if (!lineUID.startsWith('U') || lineUID.length < 10) {
+                showStatus('lineuid-status', 'Invalid LINE UID format (should start with U and be at least 10 chars)', 'error');
+                return;
+            }
+            
+            DEV_TOOLS.setMockLineUID(lineUID);
+            showStatus('lineuid-status', `Mock LINE UID set: ${lineUID}`, 'success');
+            console.log('Mock LINE UID set:', lineUID);
+        }
+        
+        function showCurrentLineUID() {
+            const lineUID = DEV_TOOLS.getMockLineUID();
+            if (lineUID) {
+                showStatus('lineuid-status', `Current: ${lineUID}`, 'success');
+            } else {
+                showStatus('lineuid-status', 'No mock LINE UID set', 'error');
+            }
+        }
+        
+        function clearMockLineUID() {
+            DEV_TOOLS.clearMockLineUID();
+            showStatus('lineuid-status', 'Mock LINE UID cleared', 'success');
+        }
+        
+        async function testLinkLineAccount() {
+            const agent = DEV_TOOLS.getMockAgent();
+            const lineUID = DEV_TOOLS.getMockLineUID();
+            
+            if (!agent || !lineUID) {
+                showStatus('lineuid-status', 'Please set both Mock Agent and LINE UID first', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('lineuid-status', 'Testing link LINE account...', 'success');
+                
+                const response = await fetch('/api/method/crmliff.api.liff_api.link_line_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'agent_code': agent.agent_code,
+                        'line_uid': lineUID
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Link LINE Account result:', result);
+                
+                if (result.message && result.message.success) {
+                    showStatus('lineuid-status', `✅ Link successful: ${agent.agent_code} ↔ ${lineUID}`, 'success');
+                } else {
+                    showStatus('lineuid-status', `❌ Link failed: ${result.message?.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Link LINE Account error:', error);
+                showStatus('lineuid-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetAgentInfo() {
+            const lineUID = DEV_TOOLS.getMockLineUID();
+            
+            if (!lineUID) {
+                showStatus('lineuid-status', 'Please set Mock LINE UID first', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('lineuid-status', 'Testing get agent info...', 'success');
+                
+                const response = await fetch(`/api/method/crmliff.api.liff_api.get_agent_info?line_uid=${encodeURIComponent(lineUID)}`);
+                const result = await response.json();
+                console.log('Get Agent Info result:', result);
+                
+                if (result.message && result.message.success) {
+                    const agentData = result.message.data;
+                    showStatus('lineuid-status', `✅ Found agent: ${agentData.agent_name} (${agentData.name})`, 'success');
+                } else if (result.message && result.message.requires_registration) {
+                    showStatus('lineuid-status', `⚠️ LINE UID not linked to any agent`, 'error');
+                } else {
+                    showStatus('lineuid-status', `❌ Error: ${result.message?.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Get Agent Info error:', error);
+                showStatus('lineuid-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullVerificationFlow() {
+            const agent = DEV_TOOLS.getMockAgent();
+            const lineUID = DEV_TOOLS.getMockLineUID();
+            
+            if (!agent || !lineUID) {
+                showStatus('lineuid-status', '❌ Please set both Mock Agent and LINE UID first', 'error');
+                return;
+            }
+            
+            showStatus('lineuid-status', '🔬 Testing Full Verification Flow...', 'success');
+            console.log('🔬 === STARTING FULL VERIFICATION TEST ===');
+            
+            try {
+                // Step 1: Test Agent Verification
+                console.log('📋 Step 1: Testing Agent Verification...');
+                const verifyResponse = await fetch(`/api/method/crmliff.api.liff_api.verify_agent?agent_code=${encodeURIComponent(agent.agent_code)}`, {
+                    method: 'GET'
+                });
+                const verifyResult = await verifyResponse.json();
+                console.log('✅ Verify Result:', verifyResult);
+                
+                if (!verifyResult.message || !verifyResult.message.success) {
+                    showStatus('lineuid-status', `❌ Step 1 Failed: ${verifyResult.message?.error}`, 'error');
+                    return;
+                }
+                
+                // Step 2: Test LINE UID Linking  
+                console.log('🔗 Step 2: Testing LINE UID Linking...');
+                const linkResponse = await fetch('/api/method/crmliff.api.liff_api.link_line_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'agent_code': agent.agent_code,
+                        'line_uid': lineUID
+                    })
+                });
+                const linkResult = await linkResponse.json();
+                console.log('🔗 Link Result:', linkResult);
+                
+                if (!linkResult.message || !linkResult.message.success) {
+                    showStatus('lineuid-status', `❌ Step 2 Failed: ${linkResult.message?.error}`, 'error');
+                    return;
+                }
+                
+                // Step 3: Test Auto-Login (Get Agent by LINE UID)
+                console.log('🔍 Step 3: Testing Auto-Login (Get Agent by LINE UID)...');
+                const getAgentResponse = await fetch(`/api/method/crmliff.api.liff_api.get_agent_info?line_uid=${encodeURIComponent(lineUID)}`);
+                const getAgentResult = await getAgentResponse.json();
+                console.log('🔍 Get Agent Result:', getAgentResult);
+                
+                if (getAgentResult.message && getAgentResult.message.success) {
+                    const agentData = getAgentResult.message.data;
+                    showStatus('lineuid-status', `✅ Full Flow Success! Agent: ${agentData.agent_name} (${agentData.agent_code})`, 'success');
+                    console.log('🎉 === FULL VERIFICATION TEST SUCCESSFUL ===');
+                } else if (getAgentResult.message && getAgentResult.message.requires_registration) {
+                    showStatus('lineuid-status', `❌ Step 3 Failed: Auto-login will not work - Link was not saved properly`, 'error');
+                    console.log('❌ === LINK NOT SAVED PROPERLY ===');
+                } else {
+                    showStatus('lineuid-status', `❌ Step 3 Failed: ${getAgentResult.message?.error}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Full Verification Flow Error:', error);
+                showStatus('lineuid-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function usePresetLocation() {
+            const preset = document.getElementById('location-preset').value;
+            const locations = {
+                'bts-asok': { lat: 13.7365, lng: 100.5618 },
+                'central-world': { lat: 13.7469, lng: 100.5389 },
+                'chatuchak': { lat: 13.7992, lng: 100.5495 },
+                'siam': { lat: 13.7456, lng: 100.5342 }
+            };
+            
+            if (locations[preset]) {
+                document.getElementById('mock-lat').value = locations[preset].lat;
+                document.getElementById('mock-lng').value = locations[preset].lng;
+                setMockLocation();
+            }
+        }
+        
+        function setMockLocation() {
+            const lat = parseFloat(document.getElementById('mock-lat').value);
+            const lng = parseFloat(document.getElementById('mock-lng').value);
+            
+            if (isNaN(lat) || isNaN(lng)) {
+                showStatus('location-status', 'Please enter valid coordinates', 'error');
+                return;
+            }
+            
+            DEV_TOOLS.setMockLocation(lat, lng);
+            showStatus('location-status', `Mock location set: ${lat}, ${lng}`, 'success');
+        }
+        
+        function showCurrentLocation() {
+            if (window.mockLocation) {
+                const loc = window.mockLocation;
+                showStatus('location-status', `Current: ${loc.latitude}, ${loc.longitude}`, 'success');
+            } else {
+                showStatus('location-status', 'No mock location set', 'error');
+            }
+        }
+        
+        function openListStore() {
+            window.open('/list-store', '_blank');
+        }
+        
+        function openLiffApp() {
+            window.open('/liff-app', '_blank');
+        }
+        
+        function clearAllData() {
+            localStorage.clear();
+            showStatus('agent-status', 'All data cleared', 'success');
+            showStatus('location-status', 'All data cleared', 'success');
+        }
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+        
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Auto-load current values
+        window.addEventListener('load', () => {
+            showCurrentAgent();
+            showCurrentLineUID();
+            showCurrentLocation();
+        });
+    </script>
+</body>
+</html> 

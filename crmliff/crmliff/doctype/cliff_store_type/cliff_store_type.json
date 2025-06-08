@@ -1,14 +1,15 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:store_type_code",
- "creation": "2024-01-15 10:00:00.000000",
+ "creation": "2024-01-15 10:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "store_type_name",
-  "store_type_code", 
+  "store_type_code",
   "description",
   "column_break_4",
   "icon",
@@ -44,44 +45,44 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "Emoji or icon for UI display",
    "fieldname": "icon",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Icon",
-   "description": "Emoji or icon for UI display"
+   "label": "Icon"
   },
   {
+   "description": "Color code for UI display",
    "fieldname": "color",
    "fieldtype": "Color",
    "in_list_view": 1,
-   "label": "Color",
-   "description": "Color code for UI display"
+   "label": "Color"
   },
   {
    "fieldname": "section_break_7",
    "fieldtype": "Section Break"
   },
   {
+   "default": "1",
    "fieldname": "is_active",
    "fieldtype": "Check",
-   "default": 1,
    "in_list_view": 1,
    "label": "Is Active"
   },
   {
+   "default": "0",
+   "description": "Order for display in UI",
    "fieldname": "sort_order",
    "fieldtype": "Int",
-   "default": 0,
    "in_list_view": 1,
-   "label": "Sort Order",
-   "description": "Order for display in UI"
+   "label": "Sort Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-15 10:00:00.000000",
+ "modified": "2025-06-08 10:28:32.287981",
  "modified_by": "Administrator",
- "module": "CRMLiff",
+ "module": "Crmliff",
  "name": "CLIFF Store Type",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
@@ -117,4 +118,4 @@
  "states": [],
  "title_field": "store_type_name",
  "track_changes": 1
-} 
+}

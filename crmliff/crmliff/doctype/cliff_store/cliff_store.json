@@ -2,11 +2,14 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "format:STORE-{####}",
- "creation": "2025-06-08 08:00:00.000000",
+ "creation": "2025-06-08 08:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "section_break_18",
+  "cover_image",
+  "section_break_lggf",
   "store_name",
   "store_type",
   "column_break_3",
@@ -23,18 +26,17 @@
   "section_break_14",
   "first_visit_date",
   "last_visit_date",
-  "total_visits",
-  "section_break_18",
-  "cover_image"
+  "column_break_afdc",
+  "total_visits"
  ],
  "fields": [
   {
+   "description": "\u0e0a\u0e37\u0e48\u0e2d\u0e23\u0e49\u0e32\u0e19",
    "fieldname": "store_name",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Store Name",
-   "reqd": 1,
-   "description": "ชื่อร้าน"
+   "reqd": 1
   },
   {
    "fieldname": "store_type",
@@ -49,21 +51,21 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "\u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e40\u0e0b\u0e25\u0e2a\u0e4c\u0e17\u0e35\u0e48\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e23\u0e49\u0e32\u0e19",
    "fieldname": "created_by_agent",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Created By Agent",
    "options": "CLIFF Sale Agent",
-   "reqd": 1,
-   "description": "พนักงานเซลส์ที่สร้างข้อมูลร้าน"
+   "reqd": 1
   },
   {
+   "default": "Active",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
    "options": "Active\nInactive\nPending",
-   "default": "Active",
    "reqd": 1
   },
   {
@@ -72,22 +74,22 @@
    "label": "Store Information"
   },
   {
+   "description": "\u0e23\u0e32\u0e22\u0e25\u0e30\u0e40\u0e2d\u0e35\u0e22\u0e14\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e40\u0e15\u0e34\u0e21\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e23\u0e49\u0e32\u0e19",
    "fieldname": "store_description",
    "fieldtype": "Small Text",
-   "label": "Store Description",
-   "description": "รายละเอียดเพิ่มเติมเกี่ยวกับร้าน"
+   "label": "Store Description"
   },
   {
+   "description": "\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d",
    "fieldname": "contact_name",
    "fieldtype": "Data",
-   "label": "Contact Name",
-   "description": "ชื่อผู้ติดต่อ"
+   "label": "Contact Name"
   },
   {
+   "description": "\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e1c\u0e39\u0e49\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d",
    "fieldname": "contact_phone",
-   "fieldtype": "Phone",
-   "label": "Contact Phone",
-   "description": "เบอร์โทรผู้ติดต่อ"
+   "fieldtype": "Data",
+   "label": "Contact Phone"
   },
   {
    "fieldname": "section_break_10",
@@ -98,21 +100,21 @@
    "fieldname": "location_lat",
    "fieldtype": "Float",
    "label": "Latitude",
-   "precision": 6,
+   "precision": "6",
    "reqd": 1
   },
   {
    "fieldname": "location_lng",
    "fieldtype": "Float",
    "label": "Longitude",
-   "precision": 6,
+   "precision": "6",
    "reqd": 1
   },
   {
+   "description": "\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48 (\u0e08\u0e32\u0e01 GPS)",
    "fieldname": "address",
    "fieldtype": "Small Text",
-   "label": "Address",
-   "description": "ที่อยู่ (จาก GPS)"
+   "label": "Address"
   },
   {
    "fieldname": "section_break_14",
@@ -120,25 +122,25 @@
    "label": "Visit History"
   },
   {
+   "description": "\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e40\u0e22\u0e35\u0e22\u0e21\u0e0a\u0e21\u0e04\u0e23\u0e31\u0e49\u0e07\u0e41\u0e23\u0e01",
    "fieldname": "first_visit_date",
    "fieldtype": "Datetime",
    "label": "First Visit Date",
-   "description": "วันที่เยียมชมครั้งแรก",
    "read_only": 1
   },
   {
+   "description": "\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e40\u0e22\u0e35\u0e22\u0e21\u0e0a\u0e21\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14",
    "fieldname": "last_visit_date",
    "fieldtype": "Datetime",
    "label": "Last Visit Date",
-   "description": "วันที่เยียมชมล่าสุด",
    "read_only": 1
   },
   {
+   "default": "0",
+   "description": "\u0e08\u0e33\u0e19\u0e27\u0e19\u0e04\u0e23\u0e31\u0e49\u0e07\u0e17\u0e35\u0e48\u0e40\u0e22\u0e35\u0e22\u0e21\u0e0a\u0e21",
    "fieldname": "total_visits",
    "fieldtype": "Int",
    "label": "Total Visits",
-   "default": 0,
-   "description": "จำนวนครั้งที่เยียมชม",
    "read_only": 1
   },
   {
@@ -147,17 +149,26 @@
    "label": "Images"
   },
   {
+   "description": "\u0e23\u0e39\u0e1b\u0e2b\u0e19\u0e49\u0e32\u0e23\u0e49\u0e32\u0e19",
    "fieldname": "cover_image",
    "fieldtype": "Attach Image",
-   "label": "Cover Image",
-   "description": "รูปหน้าร้าน"
+   "label": "Cover Image"
+  },
+  {
+   "fieldname": "column_break_afdc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_lggf",
+   "fieldtype": "Section Break"
   }
  ],
+ "image_field": "cover_image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-08 08:00:00.000000",
+ "modified": "2025-06-08 15:08:23.899134",
  "modified_by": "Administrator",
- "module": "CRMLiff",
+ "module": "Crmliff",
  "name": "CLIFF Store",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
@@ -199,9 +210,10 @@
   }
  ],
  "quick_entry": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
  "title_field": "store_name",
  "track_changes": 1
-} 
+}
