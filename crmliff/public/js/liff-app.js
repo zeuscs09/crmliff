@@ -93,11 +93,14 @@ const elements = {
     errorOkBtn: document.getElementById('error-ok-btn')
 };
 
-// ===== MOCK DATA =====
-const mockAgents = {
-    'S001': { name: 'สมชาย ใจดี', territory: 'กรุงเทพฯ เขตบางกะปิ' },
-    'S002': { name: 'สมศรี รักงาน', territory: 'กรุงเทพฯ เขตห้วยขวาง' },
-    'S003': { name: 'สมหมาย ขยันทำ', territory: 'กรุงเทพฯ เขตลาดพร้าว' }
+// ===== STORE TYPE DATA =====
+const storeTypeMapping = {
+    'food': 'FOOD001', // Map to actual store type codes in system
+    'retail': 'RETAIL001',
+    'grocery': 'GROCERY001',
+    'drink': 'DRINK001',
+    'convenience': 'CONV001',
+    'pharmacy': 'PHARM001'
 };
 
 // ===== APP INITIALIZATION =====
@@ -109,13 +112,21 @@ document.addEventListener('DOMContentLoaded', function() {
 async function initializeLiff() {
     try {
         console.log('📱 Initializing LIFF...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        currentUser = {
-            userId: 'mock-user-123',
-            displayName: 'ผู้ใช้ทดสอบ',
-            pictureUrl: null
-        };
+        // Initialize LIFF
+        await liff.init({ 
+            liffId: window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1') 
+                ? '2007538080-ZN9y1Woe' // Development LIFF ID
+                : '2007538080-ZN9y1Woe' // Production LIFF ID (replace with actual)
+        });
+        
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+        }
+
+        // Get user profile from LINE
+        currentUser = await liff.getProfile();
         
         console.log('✅ LIFF initialized successfully');
         showScreen('login');
@@ -518,7 +529,7 @@ function updateLocationDisplay() {
 }
 
 // ===== AUTHENTICATION =====
-function handleVerification() {
+async function handleVerification() {
     const agentCode = elements.agentCode.value.trim().toUpperCase();
     console.log(`🔐 Verifying agent code: ${agentCode}`);
     
@@ -526,27 +537,54 @@ function handleVerification() {
         showError('กรุณากรอกรหัสพนักงานเซลส์');
         return;
     }
-    
-    if (mockAgents[agentCode]) {
-        const agent = mockAgents[agentCode];
-        console.log('✅ Verification successful:', agent);
-        
-        currentUser.agent = {
-            code: agentCode,
-            name: agent.name,
-            territory: agent.territory
-        };
-        
-        showScreen('main');
-        currentStep = 1;
-        showStep(currentStep);
-        localStorage.setItem('crmliff_current_agent', JSON.stringify(currentUser.agent));
-        
-        // Start getting location after login
-        getCurrentLocation();
-        
-    } else {
-        showError('รหัสพนักงานไม่ถูกต้อง กรุณาลองใหม่ (ใช้ S001, S002, หรือ S003 สำหรับทดสอบ)');
+
+    try {
+        elements.verifyBtn.disabled = true;
+        elements.verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+
+        // Verify agent with server
+        const response = await fetch('/api/method/crmliff.api.verify_agent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                agent_code: agentCode,
+                line_uid: currentUser.userId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.message && result.message.success) {
+            const agent = result.message.agent;
+            console.log('✅ Verification successful:', agent);
+            
+            currentUser.agent = {
+                code: agent.agent_code,
+                name: agent.agent_name,
+                agentDoc: agent.name
+            };
+            
+            showScreen('main');
+            currentStep = 1;
+            showStep(currentStep);
+            updateProgressBar();
+            localStorage.setItem('crmliff_current_agent', JSON.stringify(currentUser.agent));
+            
+            // Start getting location after login
+            getCurrentLocation();
+            
+        } else {
+            throw new Error(result.message?.error || 'ไม่พบข้อมูลพนักงานเซลส์');
+        }
+
+    } catch (error) {
+        console.error('Verification error:', error);
+        showError(error.message || 'เกิดข้อผิดพลาดในการยืนยันตัวตน');
+    } finally {
+        elements.verifyBtn.disabled = false;
+        elements.verifyBtn.innerHTML = '<i class="fas fa-check"></i> ยืนยันตัวตน';
     }
 }
 
@@ -625,24 +663,35 @@ async function handleSubmission() {
     if (!validateCurrentStep()) {
         return;
     }
+
+    // Get visit type from URL parameters (for checkin) or default to New Store
+    const urlParams = new URLSearchParams(window.location.search);
+    const visitType = urlParams.get('visit_type') || 'New Store';
+    const storeId = urlParams.get('store_id');
+    
+    // Upload photo first if exists
+    let photoUrl = null;
+    if (capturedPhoto) {
+        photoUrl = await uploadPhoto(capturedPhoto.file);
+    }
     
     const visitData = {
-        id: 'visit_' + Date.now(),
-        timestamp: new Date().toISOString(),
-        agent: currentUser.agent,
-        location: currentLocation,
-        storeType: selectedStoreType,
-        photo: {
-            filename: capturedPhoto.file.name,
-            size: capturedPhoto.file.size,
-            timestamp: capturedPhoto.timestamp
-        },
-        storeInfo: {
-            name: elements.storeNameStep3.value.trim(),
-            contactName: elements.contactNameStep3.value.trim(),
-            contactPhone: elements.contactPhoneStep3.value.trim(),
-            description: elements.storeDescriptionStep3.value.trim()
-        }
+        agent_code: currentUser.agent.agentDoc,
+        visit_type: visitType,
+        store_id: storeId, // Only for check-in
+        location_lat: currentLocation.coords.latitude,
+        location_lng: currentLocation.coords.longitude,
+        address: currentLocation.address,
+        store_type: storeTypeMapping[selectedStoreType] || selectedStoreType,
+        store_name: elements.storeNameStep3.value.trim(),
+        store_description: elements.storeDescriptionStep3.value.trim(),
+        contact_name: elements.contactNameStep3.value.trim(),
+        contact_phone: elements.contactPhoneStep3.value.trim(),
+        cover_image: photoUrl,
+        photos: photoUrl ? [{
+            image: photoUrl,
+            caption: 'รูปหน้าร้าน'
+        }] : []
     };
     
     console.log('📊 Visit data prepared:', visitData);
@@ -651,24 +700,59 @@ async function handleSubmission() {
     elements.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
     
     try {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const savedVisits = JSON.parse(localStorage.getItem('crmliff_visits') || '[]');
-        savedVisits.push(visitData);
-        localStorage.setItem('crmliff_visits', JSON.stringify(savedVisits));
-        localStorage.setItem('crmliff_last_visit', JSON.stringify(visitData));
-        
-        console.log('✅ Visit data saved successfully');
-        showScreen('success');
-        resetForm();
+        const response = await fetch('/api/method/crmliff.api.save_visit_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(visitData)
+        });
+
+        const result = await response.json();
+
+        if (result.message && result.message.success) {
+            console.log('✅ Visit data saved successfully');
+            showScreen('success');
+            resetForm();
+        } else {
+            throw new Error(result.message?.error || 'เกิดข้อผิดพลาดในการบันทึก');
+        }
         
     } catch (error) {
         console.error('❌ Submission failed:', error);
-        showError('เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง');
+        showError(error.message || 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง');
         
     } finally {
         elements.nextBtn.disabled = false;
         elements.nextBtn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล';
+    }
+}
+
+// ===== PHOTO UPLOAD =====
+async function uploadPhoto(file) {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('doctype', 'CLIFF Store');
+        formData.append('docname', 'temp');
+
+        const response = await fetch('/api/method/upload_file', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.message && result.message.file_url) {
+            return result.message.file_url;
+        } else {
+            console.warn('Photo upload failed, continuing without photo');
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('Photo upload error:', error);
+        return null;
     }
 }
 

@@ -1,0 +1,207 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:STORE-{####}",
+ "creation": "2025-06-08 08:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "store_name",
+  "store_type",
+  "column_break_3",
+  "created_by_agent",
+  "status",
+  "section_break_6",
+  "store_description",
+  "contact_name",
+  "contact_phone",
+  "section_break_10",
+  "location_lat",
+  "location_lng",
+  "address",
+  "section_break_14",
+  "first_visit_date",
+  "last_visit_date",
+  "total_visits",
+  "section_break_18",
+  "cover_image"
+ ],
+ "fields": [
+  {
+   "fieldname": "store_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Store Name",
+   "reqd": 1,
+   "description": "ชื่อร้าน"
+  },
+  {
+   "fieldname": "store_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Store Type",
+   "options": "CLIFF Store Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "created_by_agent",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Created By Agent",
+   "options": "CLIFF Sale Agent",
+   "reqd": 1,
+   "description": "พนักงานเซลส์ที่สร้างข้อมูลร้าน"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nPending",
+   "default": "Active",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Store Information"
+  },
+  {
+   "fieldname": "store_description",
+   "fieldtype": "Small Text",
+   "label": "Store Description",
+   "description": "รายละเอียดเพิ่มเติมเกี่ยวกับร้าน"
+  },
+  {
+   "fieldname": "contact_name",
+   "fieldtype": "Data",
+   "label": "Contact Name",
+   "description": "ชื่อผู้ติดต่อ"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Phone",
+   "label": "Contact Phone",
+   "description": "เบอร์โทรผู้ติดต่อ"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "label": "Location"
+  },
+  {
+   "fieldname": "location_lat",
+   "fieldtype": "Float",
+   "label": "Latitude",
+   "precision": 6,
+   "reqd": 1
+  },
+  {
+   "fieldname": "location_lng",
+   "fieldtype": "Float",
+   "label": "Longitude",
+   "precision": 6,
+   "reqd": 1
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "description": "ที่อยู่ (จาก GPS)"
+  },
+  {
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break",
+   "label": "Visit History"
+  },
+  {
+   "fieldname": "first_visit_date",
+   "fieldtype": "Datetime",
+   "label": "First Visit Date",
+   "description": "วันที่เยียมชมครั้งแรก",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_visit_date",
+   "fieldtype": "Datetime",
+   "label": "Last Visit Date",
+   "description": "วันที่เยียมชมล่าสุด",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_visits",
+   "fieldtype": "Int",
+   "label": "Total Visits",
+   "default": 0,
+   "description": "จำนวนครั้งที่เยียมชม",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break",
+   "label": "Images"
+  },
+  {
+   "fieldname": "cover_image",
+   "fieldtype": "Attach Image",
+   "label": "Cover Image",
+   "description": "รูปหน้าร้าน"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-08 08:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "CRMLiff",
+ "name": "CLIFF Store",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "store_name",
+ "track_changes": 1
+} 

@@ -6,6 +6,19 @@ app_email = "nattapong@jingjaisoft.com"
 app_license = "mit"
 # required_apps = []
 
+# Fixtures
+# --------
+# fixtures = [
+#     {
+#         "doctype": "CLIFF Store Type",
+#         "filters": [["name", "in", ["FOOD", "RETAIL", "GROCERY", "BEVERAGE", "CONVENIENCE", "PHARMACY", "BEAUTY", "OTHER"]]]
+#     },
+#     {
+#         "doctype": "CLIFF Sale Agent", 
+#         "filters": [["name", "in", ["S001", "S002", "S003", "S004", "S005"]]]
+#     }
+# ]
+
 # Includes in <head>
 # ------------------
 
@@ -68,12 +81,12 @@ app_license = "mit"
 # ------------
 
 # before_install = "crmliff.install.before_install"
-# after_install = "crmliff.install.after_install"
+#after_install = "crmliff.crmliff.install.after_install"
 
 # Uninstallation
 # ------------
 
-# before_uninstall = "crmliff.uninstall.before_uninstall"
+#before_uninstall = "crmliff.crmliff.install.before_uninstall"
 # after_uninstall = "crmliff.uninstall.after_uninstall"
 
 # Integration Setup

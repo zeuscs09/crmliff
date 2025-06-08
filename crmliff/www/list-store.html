@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bangbow Sales Kit - รายการร้านค้า</title>
+    
+    <!-- LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/crmliff/css/liff-app.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Store List Specific Styles */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .page-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .page-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .search-container {
+            padding: 20px;
+            background: white;
+            position: sticky;
+            top: 80px;
+            z-index: 99;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .stores-container {
+            padding: 0 20px 100px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .store-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .store-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .store-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .store-info {
+            flex: 1;
+        }
+        
+        .store-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        
+        .store-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8f9fa;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .store-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 15px;
+        }
+        
+        .store-image.placeholder {
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+        }
+        
+        .store-details {
+            margin: 15px 0;
+        }
+        
+        .store-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .store-detail-item i {
+            width: 16px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .store-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-checkin {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-checkin:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-view {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view:hover {
+            background: #e9ecef;
+        }
+        
+        .last-visit {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .visit-count {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            color: #999;
+        }
+        
+        .empty-state p {
+            margin: 0;
+            color: #bbb;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Status Indicator */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-active { background: #4CAF50; }
+        .status-inactive { background: #f44336; }
+        .status-pending { background: #ff9800; }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .page-header {
+                padding: 15px;
+            }
+            
+            .page-header h1 {
+                font-size: 20px;
+            }
+            
+            .search-container {
+                padding: 15px;
+            }
+            
+            .stores-container {
+                padding: 0 15px 100px 15px;
+            }
+            
+            .store-card {
+                padding: 15px;
+            }
+            
+            .store-name {
+                font-size: 16px;
+            }
+            
+            .fab {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>กำลังโหลด...</p>
+        </div>
+    </div>
+
+    <!-- Login/Verification Screen -->
+    <div id="login-screen" class="screen hidden">
+        <div class="header">
+            <h1><i class="fas fa-store"></i> Bangbow Sales Kit</h1>
+            <p>รายการร้านค้าของคุณ</p>
+        </div>
+        
+        <div class="login-content">
+            <div class="profile-section">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="user-name">กำลังโหลดข้อมูล...</h2>
+            </div>
+            
+            <div class="verification-form">
+                <h3>ยืนยันตัวตน</h3>
+                <p>กรุณากรอกรหัสพนักงานเซลส์ของคุณ</p>
+                <div class="form-group">
+                    <label for="agent-code">รหัสพนักงานเซลส์</label>
+                    <input type="text" id="agent-code" placeholder="เช่น S001, S002">
+                </div>
+                <button id="verify-btn" class="btn btn-primary">
+                    <i class="fas fa-check"></i> ยืนยันตัวตน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Store List Screen -->
+    <div id="main-screen" class="screen hidden">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-store"></i> รายการร้านค้า</h1>
+            <p>ร้านที่คุณได้เยี่ยมชมและสร้างไว้</p>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="ค้นหาชื่อร้าน...">
+            </div>
+        </div>
+
+        <!-- Stores Container -->
+        <div class="stores-container">
+            <!-- Loading State -->
+            <div id="loading-stores" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>กำลังโหลดรายการร้านค้า...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-stores" class="empty-state hidden">
+                <i class="fas fa-store-slash"></i>
+                <h3>ยังไม่มีร้านค้า</h3>
+                <p>คุณยังไม่ได้สร้างข้อมูลร้านค้าใดๆ<br>เริ่มต้นด้วยการสร้างร้านใหม่!</p>
+            </div>
+
+            <!-- Stores List -->
+            <div id="stores-list">
+                <!-- Store items will be populated here -->
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button id="fab-new-store" class="fab" title="สร้างร้านใหม่">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> ข้อผิดพลาด</h3>
+                <button id="close-error" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</p>
+            </div>
+            <div class="modal-footer">
+                <button id="error-ok-btn" class="btn btn-primary">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/assets/crmliff/js/list-store.js?v=1.0.1"></script>
+</body>
+</html> 

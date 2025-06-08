@@ -1,0 +1,205 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2024-01-15 10:45:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "sale_agent",
+  "visit_datetime",
+  "column_break_4",
+  "visit_type",
+  "store_link",
+  "section_break_5",
+  "store_type",
+  "section_break_6",
+  "store_name",
+  "store_description",
+  "column_break_9",
+  "contact_name",
+  "contact_phone",
+  "section_break_12",
+  "location_lat",
+  "location_lng",
+  "section_break_15",
+  "photos"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "CSV-YYYY-MM-.####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sale_agent",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sale Agent",
+   "options": "CLIFF Sale Agent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "visit_datetime",
+   "fieldtype": "Datetime",
+   "default": "now",
+   "in_list_view": 1,
+   "label": "Visit Date & Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "visit_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Visit Type",
+   "options": "New Store\nCheck-in",
+   "default": "New Store",
+   "reqd": 1,
+   "description": "ประเภทการเยี่ยมชม: ร้านใหม่หรือเช็คอิน"
+  },
+  {
+   "fieldname": "store_link",
+   "fieldtype": "Link",
+   "label": "Store",
+   "options": "CLIFF Store",
+   "description": "เลือกร้านที่มีอยู่แล้ว (กรณี Check-in)",
+   "depends_on": "eval:doc.visit_type==='Check-in'"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "store_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Store Type",
+   "options": "CLIFF Store Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Store Information"
+  },
+  {
+   "fieldname": "store_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Store Name",
+   "description": "ชื่อร้าน (ไม่บังคับ)"
+  },
+  {
+   "fieldname": "store_description",
+   "fieldtype": "Small Text",
+   "label": "Store Description",
+   "description": "รายละเอียดเพิ่มเติมเกี่ยวกับร้าน"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_name",
+   "fieldtype": "Data",
+   "label": "Contact Name",
+   "description": "ชื่อผู้ติดต่อ (ไม่บังคับ)"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Phone",
+   "label": "Contact Phone",
+   "description": "เบอร์โทรผู้ติดต่อ (ไม่บังคับ)"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break",
+   "label": "Location"
+  },
+  {
+   "fieldname": "location_lat",
+   "fieldtype": "Float",
+   "label": "Latitude",
+   "precision": 6,
+   "reqd": 1
+  },
+  {
+   "fieldname": "location_lng",
+   "fieldtype": "Float",
+   "label": "Longitude", 
+   "precision": 6,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break",
+   "label": "Photos"
+  },
+  {
+   "fieldname": "photos",
+   "fieldtype": "Table",
+   "label": "Photos",
+   "options": "CLIFF Store Visit Photo",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-15 10:45:00.000000",
+ "modified_by": "Administrator",
+ "module": "CRMLiff",
+ "name": "CLIFF Customer Store Visit",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "visit_datetime",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "store_name",
+ "track_changes": 1
+} 

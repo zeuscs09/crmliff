@@ -1,0 +1,1 @@
+# CLIFF Store Type DocType 

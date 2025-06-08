@@ -49,28 +49,28 @@
 ## ✅ Phase 2: Backend Development (Frappe)
 
 ### 🏗️ DocType Creation
-- [ ] สร้าง DocType `CLIFF Store Type`
-  - [ ] กำหนด fields สำหรับ store_type_name, store_type_code, icon, color
-  - [ ] ตั้งค่า permissions และ validation
-  - [ ] เพิ่ม sort_order สำหรับจัดลำดับการแสดงผล
-  - [ ] สร้างข้อมูลตัวอย่าง (ร้านอาหาร, ร้านค้าปลีก, ร้านโชห่วย ฯลฯ)
-- [ ] สร้าง DocType `CLIFF Sale Agent`
-  - [ ] กำหนด fields สำหรับรหัสพนักงาน, ชื่อ, LINE UID, territory
-  - [ ] ตั้งค่า permissions และ validation
-  - [ ] เพิ่ม unique constraint สำหรับ line_uid และ agent_code
-- [ ] สร้าง DocType `CLIFF Customer Store Visit`
-  - [ ] กำหนด fields ตาม specification
-  - [ ] Link กับ CLIFF Sale Agent และ CLIFF Store Type
-  - [ ] ตั้งค่า permissions และ workflow
-  - [ ] เพิ่ม validation rules
-- [ ] สร้าง Sub DocType `CLIFF Store Visit Photo`
-  - [ ] กำหนด fields สำหรับ image และ caption
-  - [ ] ตั้งค่า parent-child relationship
+- [x] สร้าง DocType `CLIFF Store Type`
+  - [x] กำหนด fields สำหรับ store_type_name, store_type_code, icon, color
+  - [x] ตั้งค่า permissions และ validation
+  - [x] เพิ่ม sort_order สำหรับจัดลำดับการแสดงผล
+  - [x] สร้างข้อมูลตัวอย่าง (ร้านอาหาร, ร้านค้าปลีก, ร้านโชห่วย ฯลฯ)
+- [x] สร้าง DocType `CLIFF Sale Agent`
+  - [x] กำหนด fields สำหรับรหัสพนักงาน, ชื่อ, LINE UID, territory
+  - [x] ตั้งค่า permissions และ validation
+  - [x] เพิ่ม unique constraint สำหรับ line_uid และ agent_code
+- [x] สร้าง DocType `CLIFF Customer Store Visit`
+  - [x] กำหนด fields ตาม specification
+  - [x] Link กับ CLIFF Sale Agent และ CLIFF Store Type
+  - [x] ตั้งค่า permissions และ workflow
+  - [x] เพิ่ม validation rules
+- [x] สร้าง Sub DocType `CLIFF Store Visit Photo`
+  - [x] กำหนด fields สำหรับ image และ caption
+  - [x] ตั้งค่า parent-child relationship
 
 ### 🔐 Sale Agent Management & LINE UID Mapping
-- [ ] สร้าง custom field ใน CLIFF Sale Agent สำหรับ `line_uid`
-- [ ] สร้าง API สำหรับแมป LINE UID กับรหัสพนักงานเซลส์
-- [ ] ใส่ validation เพื่อป้องกัน duplicate LINE UID
+- [x] สร้าง custom field ใน CLIFF Sale Agent สำหรับ `line_uid`
+- [x] สร้าง API สำหรับแมป LINE UID กับรหัสพนักงานเซลส์
+- [x] ใส่ validation เพื่อป้องกัน duplicate LINE UID
 - [ ] สร้างหน้าจอจัดการ Sale Agent
 
 ### 🏪 Store Type Management
@@ -80,23 +80,23 @@
 - [ ] Icon selector สำหรับเลือกไอคอน
 
 ### 🔌 API Development
-- [ ] สร้าง API endpoint `/api/method/crmliff.store_type.get_active_types`
-  - [ ] ส่งรายการ Store Type ที่ active
-  - [ ] จัดเรียงตาม sort_order
-  - [ ] รวม icon และ color information
-- [ ] สร้าง API endpoint `/api/method/crmliff.store_visit.submit_visit`
-  - [ ] รับและตรวจสอบ LINE UID กับ CLIFF Sale Agent
-  - [ ] บันทึกข้อมูลใน CLIFF Customer Store Visit
-  - [ ] จัดการการอัปโหลดรูปภาพ
-  - [ ] ส่ง response กลับ
-- [ ] สร้าง API endpoint สำหรับยืนยันรหัสพนักงานเซลส์
-- [ ] เพิ่ม error handling และ logging
+- [x] สร้าง API endpoint `/api/method/crmliff.api.liff_api.get_store_types`
+  - [x] ส่งรายการ Store Type ที่ active
+  - [x] จัดเรียงตาม sort_order
+  - [x] รวม icon และ color information
+- [x] สร้าง API endpoint `/api/method/crmliff.api.liff_api.submit_store_visit`
+  - [x] รับและตรวจสอบ LINE UID กับ CLIFF Sale Agent
+  - [x] บันทึกข้อมูลใน CLIFF Customer Store Visit
+  - [x] จัดการการอัปโหลดรูปภาพ
+  - [x] ส่ง response กลับ
+- [x] สร้าง API endpoint สำหรับยืนยันรหัสพนักงานเซลส์
+- [x] เพิ่ม error handling และ logging
 
 ### 🛡️ Security & Validation
-- [ ] ตั้งค่า CORS สำหรับ LIFF domain
+- [x] ตั้งค่า CORS สำหรับ LIFF domain (documented)
 - [ ] เพิ่ม rate limiting
-- [ ] ตรวจสอบ authentication token
-- [ ] Validate ข้อมูล input ทั้งหมด
+- [x] ตรวจสอบ authentication token
+- [x] Validate ข้อมูล input ทั้งหมด
 
 ---
 
@@ -189,6 +189,7 @@
 
 ---
 
-**เริ่มต้นที่**: Phase 1 - UI Mobile Prototype ✅ **Progress: 80%**  
-**Priority สูงสุด**: UI Testing & Validation  
-**Focus**: ทดสอบ UI บนมือถือจริงและปรับปรุง UX 
+**เริ่มต้นที่**: Phase 1 - UI Mobile Prototype ✅ **Progress: 100%**  
+**ปัจจุบัน**: Phase 2 - Backend Development ✅ **Progress: 85%**  
+**Priority สูงสุด**: Frontend-Backend Integration  
+**Focus**: เชื่อมต่อ LIFF กับ Frappe API และทดสอบ end-to-end 

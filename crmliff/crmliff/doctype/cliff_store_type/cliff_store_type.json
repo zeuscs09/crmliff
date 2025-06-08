@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:store_type_code",
+ "creation": "2024-01-15 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "store_type_name",
+  "store_type_code", 
+  "description",
+  "column_break_4",
+  "icon",
+  "color",
+  "section_break_7",
+  "is_active",
+  "sort_order"
+ ],
+ "fields": [
+  {
+   "fieldname": "store_type_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Store Type Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "store_type_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Store Type Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Icon",
+   "description": "Emoji or icon for UI display"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "in_list_view": 1,
+   "label": "Color",
+   "description": "Color code for UI display"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "default": 1,
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "default": 0,
+   "in_list_view": 1,
+   "label": "Sort Order",
+   "description": "Order for display in UI"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "CRMLiff",
+ "name": "CLIFF Store Type",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "sort_order",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "store_type_name",
+ "track_changes": 1
+} 
