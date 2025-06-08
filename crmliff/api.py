@@ -2,7 +2,7 @@ import frappe
 import json
 from frappe.utils import now
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
 def verify_agent(agent_code, line_uid=None):
     """Verify agent credentials and optionally update LINE UID"""
     try:
@@ -29,7 +29,7 @@ def verify_agent(agent_code, line_uid=None):
         frappe.log_error(f"Error verifying agent: {str(e)}")
         return {"success": False, "error": "เกิดข้อผิดพลาดในการยืนยันตัวตน"}
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def save_visit_data(data):
     """Save visit data with support for new store creation and check-ins"""
     try:
@@ -116,7 +116,7 @@ def save_visit_data(data):
         frappe.log_error(f"Error saving visit data: {str(e)}")
         return {"success": False, "error": "เกิดข้อผิดพลาดในการบันทึกข้อมูล"}
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
 def get_agent_stores(agent_code):
     """Get all stores created by a specific agent"""
     try:

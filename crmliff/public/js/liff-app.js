@@ -113,24 +113,37 @@ async function initializeLiff() {
     try {
         console.log('📱 Initializing LIFF...');
         
-        // Initialize LIFF
-        await liff.init({ 
-            liffId: window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1') 
-                ? '2007538080-ZN9y1Woe' // Development LIFF ID
-                : '2007538080-ZN9y1Woe' // Production LIFF ID (replace with actual)
-        });
+        // Initialize LIFF using common function
+        currentUser = await CRMLIFFCommon.initializeLIFF('main');
         
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
+        if (!currentUser) {
+            return; // Will redirect to login
         }
-
-        // Get user profile from LINE
-        currentUser = await liff.getProfile();
         
         console.log('✅ LIFF initialized successfully');
-        showScreen('login');
-        elements.userName.textContent = currentUser.displayName;
+        
+        // Try auto-login first
+        const existingAgent = await CRMLIFFCommon.getAgentByLineUID(currentUser.userId);
+        
+        if (existingAgent) {
+            console.log('✅ Auto-login successful');
+            currentUser.agent = {
+                code: existingAgent.agent_code,
+                name: existingAgent.agent_name,
+                agentDoc: existingAgent.name
+            };
+            
+            showScreen('main');
+            currentStep = 1;
+            showStep(currentStep);
+            updateProgressBar();
+            getCurrentLocation();
+        } else {
+            console.log('🔐 Need manual verification');
+            showScreen('login');
+            elements.userName.textContent = currentUser.displayName;
+        }
+        
         initializeEventListeners();
         
     } catch (error) {
@@ -542,42 +555,24 @@ async function handleVerification() {
         elements.verifyBtn.disabled = true;
         elements.verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
 
-        // Verify agent with server
-        const response = await fetch('/api/method/crmliff.api.verify_agent', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                agent_code: agentCode,
-                line_uid: currentUser.userId
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.message && result.message.success) {
-            const agent = result.message.agent;
-            console.log('✅ Verification successful:', agent);
-            
-            currentUser.agent = {
-                code: agent.agent_code,
-                name: agent.agent_name,
-                agentDoc: agent.name
-            };
-            
-            showScreen('main');
-            currentStep = 1;
-            showStep(currentStep);
-            updateProgressBar();
-            localStorage.setItem('crmliff_current_agent', JSON.stringify(currentUser.agent));
-            
-            // Start getting location after login
-            getCurrentLocation();
-            
-        } else {
-            throw new Error(result.message?.error || 'ไม่พบข้อมูลพนักงานเซลส์');
-        }
+        // Use smart verification (check LINE UID first, then verify code)
+        const agent = await CRMLIFFCommon.smartVerifyAgent(agentCode, currentUser.userId);
+        console.log('✅ Verification successful:', agent);
+        
+        currentUser.agent = {
+            code: agent.agent_code,
+            name: agent.agent_name,
+            agentDoc: agent.name
+        };
+        
+        showScreen('main');
+        currentStep = 1;
+        showStep(currentStep);
+        updateProgressBar();
+        localStorage.setItem('crmliff_current_agent', JSON.stringify(currentUser.agent));
+        
+        // Start getting location after login
+        getCurrentLocation();
 
     } catch (error) {
         console.error('Verification error:', error);
@@ -679,8 +674,8 @@ async function handleSubmission() {
         agent_code: currentUser.agent.agentDoc,
         visit_type: visitType,
         store_id: storeId, // Only for check-in
-        location_lat: currentLocation.coords.latitude,
-        location_lng: currentLocation.coords.longitude,
+        location_lat: currentLocation.latitude,
+        location_lng: currentLocation.longitude,
         address: currentLocation.address,
         store_type: storeTypeMapping[selectedStoreType] || selectedStoreType,
         store_name: elements.storeNameStep3.value.trim(),
@@ -700,10 +695,14 @@ async function handleSubmission() {
     elements.nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
     
     try {
-        const response = await fetch('/api/method/crmliff.api.save_visit_data', {
+        // Get CSRF token
+        const csrfToken = await CRMLIFFCommon.getCSRFToken();
+        
+        const response = await fetch('/api/method/crmliff.api.liff_api.save_visit_data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Frappe-CSRF-Token': csrfToken,
             },
             body: JSON.stringify(visitData)
         });
@@ -728,6 +727,8 @@ async function handleSubmission() {
     }
 }
 
+
+
 // ===== PHOTO UPLOAD =====
 async function uploadPhoto(file) {
     try {
@@ -736,8 +737,13 @@ async function uploadPhoto(file) {
         formData.append('doctype', 'CLIFF Store');
         formData.append('docname', 'temp');
 
+        const csrfToken = await CRMLIFFCommon.getCSRFToken();
+        
         const response = await fetch('/api/method/upload_file', {
             method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': csrfToken,
+            },
             body: formData
         });
 
@@ -798,12 +804,11 @@ function startNewVisit() {
 // ===== ERROR HANDLING =====
 function showError(message) {
     console.error('⚠️ Error:', message);
-    elements.errorMessage.textContent = message;
-    elements.errorModal.classList.remove('hidden');
+    CRMLIFFCommon.showError(message);
 }
 
 function closeErrorModal() {
-    elements.errorModal.classList.add('hidden');
+    CRMLIFFCommon.closeError();
 }
 
 // ===== DEBUG FUNCTIONS =====

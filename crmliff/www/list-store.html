@@ -362,7 +362,7 @@
             
             <div class="verification-form">
                 <h3>ยืนยันตัวตน</h3>
-                <p>กรุณากรอกรหัสพนักงานเซลส์ของคุณ</p>
+                <p id="verification-message">กรุณากรอกรหัสพนักงานเซลส์ของคุณ</p>
                 <div class="form-group">
                     <label for="agent-code">รหัสพนักงานเซลส์</label>
                     <input type="text" id="agent-code" placeholder="เช่น S001, S002">
@@ -370,6 +370,9 @@
                 <button id="verify-btn" class="btn btn-primary">
                     <i class="fas fa-check"></i> ยืนยันตัวตน
                 </button>
+                <p id="link-info" class="text-muted" style="font-size: 12px; margin-top: 10px; display: none;">
+                    <i class="fas fa-info-circle"></i> ระบบจะเชื่อมโยงบัญชี LINE ของคุณกับรหัสพนักงาน เพื่อให้คุณไม่ต้องกรอกรหัสใหม่ในครั้งต่อไป
+                </p>
             </div>
         </div>
     </div>
@@ -380,6 +383,9 @@
         <div class="page-header">
             <h1><i class="fas fa-store"></i> รายการร้านค้า</h1>
             <p>ร้านที่คุณได้เยี่ยมชมและสร้างไว้</p>
+            <button id="change-agent-btn" class="btn-link" style="float: right; background: none; border: none; color: #667eea; font-size: 14px;">
+                <i class="fas fa-exchange-alt"></i> เปลี่ยนพนักงาน
+            </button>
         </div>
 
         <!-- Search Container -->
@@ -434,6 +440,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/assets/crmliff/js/list-store.js?v=1.0.1"></script>
+    <script src="/assets/crmliff/js/common.js?v=1.0.0"></script>
+    <script src="/assets/crmliff/js/list-store.js?v=1.0.2"></script>
 </body>
 </html> 

@@ -11,21 +11,15 @@ class StoreListApp {
 
     async init() {
         try {
-            // Initialize LIFF
-            await liff.init({ 
-                liffId: window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1') 
-                    ? '2007538080-9yOGJ6dz' // Development LIFF ID
-                    : '2007538080-9yOGJ6dz' // Production LIFF ID (replace with actual)
-            });
+            // Initialize LIFF using common function
+            this.userProfile = await CRMLIFFCommon.initializeLIFF('list');
             
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
+            if (!this.userProfile) {
+                return; // Will redirect to login
             }
 
-            // Get user profile
-            this.userProfile = await liff.getProfile();
-            this.showLoginScreen();
+            // Try to auto-login if LINE UID is already linked
+            await this.tryAutoLogin();
             
         } catch (error) {
             console.error('LIFF init error:', error);
@@ -33,13 +27,46 @@ class StoreListApp {
         }
     }
 
+    async tryAutoLogin() {
+        try {
+            // Check if agent is already linked with this LINE UID
+            const existingAgent = await CRMLIFFCommon.getAgentByLineUID(this.userProfile.userId);
+            
+            if (existingAgent) {
+                console.log('✅ Auto-login successful');
+                this.currentAgent = existingAgent;
+                this.showMainScreen();
+            } else {
+                console.log('🔐 Need manual verification');
+                this.showLoginScreen();
+            }
+            
+        } catch (error) {
+            console.warn('Auto-login failed:', error);
+            this.showLoginScreen();
+        }
+    }
+
     showLoginScreen() {
         this.hideElement('loading-screen');
+        this.hideElement('main-screen');
         this.showElement('login-screen');
         
         // Display user profile
         if (this.userProfile) {
             document.getElementById('user-name').textContent = this.userProfile.displayName || 'ผู้ใช้';
+        }
+
+        // Show link info when not auto-logged in
+        const linkInfo = document.getElementById('link-info');
+        const verificationMessage = document.getElementById('verification-message');
+        
+        if (linkInfo) {
+            linkInfo.style.display = 'block';
+        }
+        
+        if (verificationMessage) {
+            verificationMessage.textContent = 'กรุณากรอกรหัสพนักงานเซลส์เพื่อเชื่อมโยงกับบัญชี LINE ของคุณ';
         }
         
         // Setup verification
@@ -72,26 +99,9 @@ class StoreListApp {
             verifyBtn.disabled = true;
             verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
 
-            // Verify agent with server
-            const response = await fetch('/api/method/crmliff.api.verify_agent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    agent_code: agentCode,
-                    line_uid: this.userProfile.userId
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.message && result.message.success) {
-                this.currentAgent = result.message.agent;
-                this.showMainScreen();
-            } else {
-                throw new Error(result.message?.error || 'ไม่พบข้อมูลพนักงานเซลส์');
-            }
+            // Use smart verification (check LINE UID first, then verify code)
+            this.currentAgent = await CRMLIFFCommon.smartVerifyAgent(agentCode, this.userProfile.userId);
+            this.showMainScreen();
 
         } catch (error) {
             console.error('Verification error:', error);
@@ -130,6 +140,14 @@ class StoreListApp {
             // Navigate to create new store page
             window.location.href = '/liff-app';
         });
+
+        // Setup change agent button
+        const changeAgentBtn = document.getElementById('change-agent-btn');
+        if (changeAgentBtn) {
+            changeAgentBtn.addEventListener('click', () => {
+                this.showLoginScreen();
+            });
+        }
     }
 
     async loadStores() {
@@ -138,20 +156,18 @@ class StoreListApp {
             this.hideElement('empty-stores');
             this.hideElement('stores-list');
 
-            const response = await fetch('/api/method/crmliff.api.get_agent_stores', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    agent_code: this.currentAgent.name
-                })
+            const params = new URLSearchParams({
+                agent_code: this.currentAgent.name
+            });
+            
+            const response = await fetch(`/api/method/crmliff.api.liff_api.get_agent_stores?${params.toString()}`, {
+                method: 'GET'
             });
 
             const result = await response.json();
 
             if (result.message && result.message.success) {
-                this.stores = result.message.stores;
+                this.stores = result.message.data.stores;
                 this.filteredStores = [...this.stores];
                 this.renderStores();
             } else {
@@ -316,70 +332,30 @@ class StoreListApp {
     }
 
     getCurrentPosition() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Geolocation is not supported'));
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                resolve,
-                reject,
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 60000
-                }
-            );
-        });
+        return CRMLIFFCommon.getCurrentPosition();
     }
+
+
 
     // Utility functions
     formatDate(dateString) {
-        if (!dateString) return 'ไม่มีข้อมูล';
-        
-        const date = new Date(dateString);
-        return date.toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        return CRMLIFFCommon.formatDate(dateString);
     }
 
     formatDateTime(dateString) {
-        if (!dateString) return 'ไม่มีข้อมูล';
-        
-        const date = new Date(dateString);
-        return date.toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return CRMLIFFCommon.formatDateTime(dateString);
     }
 
     showElement(id) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.classList.remove('hidden');
-        }
+        CRMLIFFCommon.showElement(id);
     }
 
     hideElement(id) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.classList.add('hidden');
-        }
+        CRMLIFFCommon.hideElement(id);
     }
 
     showError(message) {
-        document.getElementById('error-message').textContent = message;
-        this.showElement('error-modal');
-        
-        // Setup close handlers
-        document.getElementById('close-error').onclick = () => this.hideElement('error-modal');
-        document.getElementById('error-ok-btn').onclick = () => this.hideElement('error-modal');
+        CRMLIFFCommon.showError(message);
     }
 }
 
