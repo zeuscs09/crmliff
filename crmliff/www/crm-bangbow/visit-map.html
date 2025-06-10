@@ -189,38 +189,102 @@
         /* Custom popup styles */
         .custom-popup {
             font-family: 'Prompt', sans-serif;
+            min-width: 280px;
         }
         
-        .custom-popup h4 {
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .popup-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #f0f0f0;
+        }
+        
+        .popup-image.placeholder {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .popup-title {
+            flex: 1;
+        }
+        
+        .custom-popup .store-name {
             color: #333;
-            margin: 0 0 8px 0;
+            margin: 0;
             font-size: 16px;
             font-weight: 600;
+            line-height: 1.2;
         }
         
-        .custom-popup p {
-            margin: 4px 0;
+        .custom-popup .agent-name {
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        .popup-details {
+            display: grid;
+            gap: 6px;
+        }
+        
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
             color: #666;
         }
         
+        .detail-row i {
+            width: 16px;
+            text-align: center;
+            color: #999;
+        }
+        
         .custom-popup .visit-type {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 4px 12px;
+            border-radius: 16px;
             font-size: 11px;
             font-weight: 500;
-            margin-top: 5px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .custom-popup .visit-type.new-store {
-            background: #e8f5e8;
-            color: #2e7d32;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
         }
         
         .custom-popup .visit-type.check-in {
-            background: #e3f2fd;
-            color: #1976d2;
+            background: linear-gradient(135deg, #2196F3, #1976d2);
+            color: white;
+        }
+        
+        /* Custom popup container */
+        .custom-popup-container .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        
+        .custom-popup-container .leaflet-popup-tip {
+            background: white;
         }
         
         /* Responsive */
@@ -247,6 +311,21 @@
             
             .map-container {
                 height: calc(100vh - 180px);
+            }
+            
+            .custom-popup {
+                min-width: 250px;
+            }
+            
+            .popup-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+            
+            .popup-image {
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -403,6 +482,7 @@
                 
                 // Add markers for each visit
                 currentVisits.forEach(visit => {
+                    console.log('Visit data:', visit); // Debug log
                     addVisitMarker(visit);
                 });
                 
@@ -455,19 +535,53 @@
                 minute: '2-digit'
             });
             
+            // Create image element or placeholder
+            // Priority: visit photo > store cover image > placeholder
+            const imageUrl = visit.store_image || visit.store_cover_image;
+            const imageHtml = imageUrl ? 
+                `<img src="${imageUrl}" alt="รูปร้าน" class="popup-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="popup-image placeholder" style="display: none;"><i class="fas fa-store"></i></div>` :
+                `<div class="popup-image placeholder"><i class="fas fa-store"></i></div>`;
+            
             const popupContent = `
                 <div class="custom-popup">
-                    <h4>${visit.store_name || 'ไม่ระบุชื่อร้าน'}</h4>
-                    <p><i class="fas fa-user"></i> <strong>Sale Agent:</strong> ${visit.sale_agent}</p>
-                    <p><i class="fas fa-calendar"></i> <strong>วันที่:</strong> ${formattedDate}</p>
-                    <p><i class="fas fa-clock"></i> <strong>เวลา:</strong> ${formattedTime}</p>
+                    <div class="popup-header">
+                        ${imageHtml}
+                        <div class="popup-title">
+                            <h3 class="store-name">${visit.store_name || 'ไม่ระบุชื่อร้าน'}</h3>
+                            <div class="agent-name">${visit.agent_name || visit.sale_agent || 'ไม่ระบุ Sale Agent'}</div>
+                        </div>
+                    </div>
+                    <div class="popup-details">
+                        <div class="detail-row">
+                            <i class="fas fa-calendar"></i>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-clock"></i>
+                            <span>${formattedTime}</span>
+                        </div>
+                        ${visit.store_address ? `
+                        <div class="detail-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${visit.store_address}</span>
+                        </div>` : ''}
+                        ${visit.customer_phone ? `
+                        <div class="detail-row">
+                            <i class="fas fa-phone"></i>
+                            <span>${visit.customer_phone}</span>
+                        </div>` : ''}
+                    </div>
                     <div class="visit-type ${visit.visit_type === 'New Store' ? 'new-store' : 'check-in'}">
                         ${visit.visit_type === 'New Store' ? 'ร้านใหม่' : 'เช็คอิน'}
                     </div>
                 </div>
             `;
             
-            marker.bindPopup(popupContent);
+            marker.bindPopup(popupContent, {
+                maxWidth: 320,
+                className: 'custom-popup-container'
+            });
             markersLayer.addLayer(marker);
         }
         

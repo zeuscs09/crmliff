@@ -110,7 +110,7 @@ def submit_visit(data):
 
 @frappe.whitelist()
 def get_visit_summary(agent_code=None, from_date=None, to_date=None):
-    """API to get visit summary for dashboard"""
+    """API to get visit summary for dashboard with photos"""
     filters = {}
     
     if agent_code:
@@ -125,6 +125,7 @@ def get_visit_summary(agent_code=None, from_date=None, to_date=None):
         else:
             filters['visit_datetime'] = ['<=', to_date]
     
+    # Get basic visit data
     visits = frappe.get_all(
         "CLIFF Customer Store Visit",
         filters=filters,
@@ -134,6 +135,49 @@ def get_visit_summary(agent_code=None, from_date=None, to_date=None):
         ],
         order_by="visit_datetime DESC"
     )
+    
+    # Enrich with related data
+    for visit in visits:
+        # Get store info
+        if visit.store_name:
+            store_info = frappe.get_value(
+                "CLIFF Store", 
+                visit.store_name, 
+                ["address", "contact_phone", "cover_image"],
+                as_dict=True
+            )
+            if store_info:
+                visit['store_address'] = store_info.address
+                visit['customer_phone'] = store_info.contact_phone
+                visit['store_cover_image'] = store_info.cover_image
+        
+        # Get agent info
+        if visit.sale_agent:
+            agent_info = frappe.get_value(
+                "CLIFF Sale Agent", 
+                visit.sale_agent, 
+                ["agent_name", "agent_code"],
+                as_dict=True
+            )
+            if agent_info:
+                visit['agent_name'] = agent_info.agent_name
+                visit['agent_code'] = agent_info.agent_code
+        
+        # Get first photo
+        photos = frappe.get_all(
+            "CLIFF Store Visit Photo",
+            filters={"parent": visit.name},
+            fields=["image", "caption"],
+            order_by="idx ASC",
+            limit=1
+        )
+        
+        if photos:
+            visit['store_image'] = photos[0].image
+            visit['image_caption'] = photos[0].caption
+        else:
+            visit['store_image'] = None
+            visit['image_caption'] = None
     
     return visits
 
