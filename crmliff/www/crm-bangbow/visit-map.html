@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่การเยี่ยมร้านค้า - Bangbow Sales Kit</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Shared Navbar -->
+    <script src="shared/navbar.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Navbar is now handled by shared component */
+        
+        .filters-container {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 999;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Prompt', sans-serif;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-filter {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+        
+        .btn-filter:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .btn-filter:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .map-container {
+            height: calc(100vh - 160px);
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .visit-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            font-size: 14px;
+        }
+        
+        .visit-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .visit-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1001;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #ff4757;
+            color: white;
+            padding: 10px 15px;
+            margin: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        /* Marker cluster styles */
+        .marker-cluster-small {
+            background-color: rgba(102, 126, 234, 0.6);
+        }
+        
+        .marker-cluster-medium {
+            background-color: rgba(102, 126, 234, 0.8);
+        }
+        
+        .marker-cluster-large {
+            background-color: rgba(102, 126, 234, 1);
+        }
+        
+        /* Custom popup styles */
+        .custom-popup {
+            font-family: 'Prompt', sans-serif;
+        }
+        
+        .custom-popup h4 {
+            color: #333;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .custom-popup p {
+            margin: 4px 0;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .custom-popup .visit-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .custom-popup .visit-type.new-store {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .custom-popup .visit-type.check-in {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .btn-filter {
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .visit-info {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 10px;
+            }
+            
+            .map-container {
+                height: calc(100vh - 180px);
+            }
+        }
+    </style>
+ </head>
+ <body>
+    
+    <div class="filters-container">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="agent-select">Sale Agent</label>
+                <select id="agent-select">
+                    <option value="">เลือก Sale Agent</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date-from">วันที่เริ่มต้น</label>
+                <input type="date" id="date-from">
+            </div>
+            <div class="filter-group">
+                <label for="date-to">วันที่สิ้นสุด</label>
+                <input type="date" id="date-to">
+            </div>
+            <button class="btn-filter" onclick="loadVisits()">
+                <i class="fas fa-search"></i> ค้นหา
+            </button>
+        </div>
+    </div>
+    
+    <div class="error-message" id="error-message"></div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="visit-info">
+            <h3>จำนวนการเยี่ยมร้าน</h3>
+            <div class="visit-count" id="visit-count">0</div>
+        </div>
+        <div class="loading" id="loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div>กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Marker Clustering Plugin -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <script>
+        let map;
+        let markersLayer;
+        let currentVisits = [];
+        
+        // Initialize map
+        function initMap() {
+            // Center on Thailand
+            map = L.map('map').setView([13.7563, 100.5018], 6);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Initialize marker cluster group
+            markersLayer = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50
+            });
+            map.addLayer(markersLayer);
+        }
+        
+        // Load agents for dropdown
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/method/crmliff.crmliff.doctype.cliff_customer_store_visit.cliff_customer_store_visit.get_agents_list', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch agents');
+                }
+                
+                const data = await response.json();
+                const agentSelect = document.getElementById('agent-select');
+                
+                // Clear existing options except the first one
+                agentSelect.innerHTML = '<option value="">เลือก Sale Agent</option>';
+                
+                const agents = data.message || [];
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.name;
+                    option.textContent = `${agent.agent_name} (${agent.agent_code})`;
+                    agentSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                showError('ไม่สามารถโหลดรายชื่อ Sale Agent ได้');
+            }
+        }
+        
+        // Load visits data
+        async function loadVisits() {
+            const agentSelect = document.getElementById('agent-select');
+            const dateFrom = document.getElementById('date-from');
+            const dateTo = document.getElementById('date-to');
+            
+            showLoading(true);
+            hideError();
+            
+            try {
+                // Build API URL with filters
+                let apiUrl = '/api/method/crmliff.crmliff.doctype.cliff_customer_store_visit.cliff_customer_store_visit.get_visit_summary';
+                const params = new URLSearchParams();
+                
+                if (agentSelect.value) {
+                    params.append('agent_code', agentSelect.value);
+                }
+                
+                if (dateFrom.value) {
+                    params.append('from_date', dateFrom.value);
+                }
+                
+                if (dateTo.value) {
+                    params.append('to_date', dateTo.value);
+                }
+                
+                if (params.toString()) {
+                    apiUrl += '?' + params.toString();
+                }
+                
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch visits');
+                }
+                
+                const data = await response.json();
+                currentVisits = data.message || [];
+                
+                // Update visit count
+                document.getElementById('visit-count').textContent = currentVisits.length;
+                
+                // Clear existing markers
+                markersLayer.clearLayers();
+                
+                // Add markers for each visit
+                currentVisits.forEach(visit => {
+                    addVisitMarker(visit);
+                });
+                
+                // Fit map to show all markers if there are any
+                if (currentVisits.length > 0) {
+                    const group = new L.featureGroup(markersLayer.getLayers());
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+                
+            } catch (error) {
+                console.error('Error loading visits:', error);
+                showError('ไม่สามารถโหลดข้อมูลการเยี่ยมร้านได้');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Add visit marker to map
+        function addVisitMarker(visit) {
+            if (!visit.location_lat || !visit.location_lng) {
+                return;
+            }
+            
+            // Create marker icon based on visit type
+            const iconColor = visit.visit_type === 'New Store' ? '#4CAF50' : '#2196F3';
+            const iconHtml = visit.visit_type === 'New Store' ? 
+                '<i class="fas fa-store" style="color: white;"></i>' : 
+                '<i class="fas fa-check-circle" style="color: white;"></i>';
+            
+            const customIcon = L.divIcon({
+                html: `<div style="background-color: ${iconColor}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${iconHtml}</div>`,
+                className: 'custom-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            const marker = L.marker([visit.location_lat, visit.location_lng], {
+                icon: customIcon
+            });
+            
+            // Create popup content
+            const visitDate = new Date(visit.visit_datetime);
+            const formattedDate = visitDate.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const formattedTime = visitDate.toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const popupContent = `
+                <div class="custom-popup">
+                    <h4>${visit.store_name || 'ไม่ระบุชื่อร้าน'}</h4>
+                    <p><i class="fas fa-user"></i> <strong>Sale Agent:</strong> ${visit.sale_agent}</p>
+                    <p><i class="fas fa-calendar"></i> <strong>วันที่:</strong> ${formattedDate}</p>
+                    <p><i class="fas fa-clock"></i> <strong>เวลา:</strong> ${formattedTime}</p>
+                    <div class="visit-type ${visit.visit_type === 'New Store' ? 'new-store' : 'check-in'}">
+                        ${visit.visit_type === 'New Store' ? 'ร้านใหม่' : 'เช็คอิน'}
+                    </div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            markersLayer.addLayer(marker);
+        }
+        
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        // Set default date range (last 7 days)
+        function setDefaultDates() {
+            const today = new Date();
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 7);
+            
+            document.getElementById('date-from').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('date-to').value = today.toISOString().split('T')[0];
+        }
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize navbar
+            initBangbowNavbar({
+                currentPage: 'visit-map',
+                title: 'แผนที่การเยี่ยมร้าน',
+                subtitle: 'ติดตามการเยี่ยมร้านค้าของ Sale Agent',
+                icon: 'fas fa-map-marked-alt'
+            });
+            
+            initMap();
+            loadAgents();
+            setDefaultDates();
+            
+            // Auto-load visits with default settings
+            setTimeout(() => {
+                loadVisits();
+            }, 500);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && (e.target.id === 'agent-select' || e.target.type === 'date')) {
+                loadVisits();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -129,10 +129,96 @@ def get_visit_summary(agent_code=None, from_date=None, to_date=None):
         "CLIFF Customer Store Visit",
         filters=filters,
         fields=[
-            "name", "visit_datetime", "store_name", "store_type", 
-            "sale_agent", "location_lat", "location_lng"
+            "name", "visit_datetime", "store_name", "visit_type", 
+            "sale_agent", "location_lat", "location_lng", "remark"
         ],
         order_by="visit_datetime DESC"
     )
     
-    return visits 
+    return visits
+
+
+@frappe.whitelist()
+def get_agents_list():
+    """API to get list of sale agents for dropdown"""
+    agents = frappe.get_all(
+        "CLIFF Sale Agent",
+        filters={'is_active': 1},
+        fields=['name', 'agent_name', 'line_uid', 'agent_code'],
+        order_by='agent_name ASC'
+    )
+    
+    return agents
+
+
+@frappe.whitelist()
+def get_dashboard_stats(days=30):
+    """API to get dashboard statistics"""
+    from datetime import datetime, timedelta
+    from frappe.utils import getdate, add_days
+    
+    # Calculate date range
+    end_date = getdate()
+    start_date = add_days(end_date, -int(days))
+    
+    # Get total visits
+    total_visits = frappe.db.count("CLIFF Customer Store Visit")
+    
+    # Get visits in date range
+    recent_visits = frappe.db.count(
+        "CLIFF Customer Store Visit",
+        {"visit_datetime": ["between", [start_date, end_date]]}
+    )
+    
+    # Get total stores
+    total_stores = frappe.db.count("CLIFF Store")
+    
+    # Get total active agents
+    total_agents = frappe.db.count("CLIFF Sale Agent", {"is_active": 1})
+    
+    # Get visit types breakdown
+    visit_types = frappe.db.sql("""
+        SELECT visit_type, COUNT(*) as count
+        FROM `tabCLIFF Customer Store Visit`
+        WHERE visit_datetime >= %s AND visit_datetime <= %s
+        GROUP BY visit_type
+    """, [start_date, end_date], as_dict=True)
+    
+    # Get daily visits for chart
+    daily_visits = frappe.db.sql("""
+        SELECT DATE(visit_datetime) as date, COUNT(*) as count
+        FROM `tabCLIFF Customer Store Visit`
+        WHERE visit_datetime >= %s AND visit_datetime <= %s
+        GROUP BY DATE(visit_datetime)
+        ORDER BY date
+    """, [start_date, end_date], as_dict=True)
+    
+    # Get top agents
+    top_agents = frappe.db.sql("""
+        SELECT 
+            csv.sale_agent,
+            sa.agent_name,
+            sa.agent_code,
+            COUNT(*) as visit_count
+        FROM `tabCLIFF Customer Store Visit` csv
+        LEFT JOIN `tabCLIFF Sale Agent` sa ON csv.sale_agent = sa.name
+        WHERE csv.visit_datetime >= %s AND csv.visit_datetime <= %s
+        GROUP BY csv.sale_agent, sa.agent_name, sa.agent_code
+        ORDER BY visit_count DESC
+        LIMIT 10
+    """, [start_date, end_date], as_dict=True)
+    
+    return {
+        "total_visits": total_visits,
+        "recent_visits": recent_visits,
+        "total_stores": total_stores,
+        "total_agents": total_agents,
+        "visit_types": visit_types,
+        "daily_visits": daily_visits,
+        "top_agents": top_agents,
+        "date_range": {
+            "start_date": start_date,
+            "end_date": end_date,
+            "days": days
+        }
+    } 
