@@ -131,6 +131,162 @@
             stroke-width: 7 !important;
         }
         
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .image-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .modal-image {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+            cursor: grab;
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-image:active {
+            cursor: grabbing;
+        }
+        
+        .modal-image.zoomed {
+            cursor: grab;
+        }
+        
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            max-height: 80vh;
+            background: #f5f5f5;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 1001;
+        }
+        
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
+        }
+        
+        .zoom-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1001;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .modal-info {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .modal-info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .modal-info-row i {
+            width: 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         .map-container {
             height: calc(100vh - 160px);
             position: relative;
@@ -252,24 +408,33 @@
         /* Custom popup styles */
         .custom-popup {
             font-family: 'Prompt', sans-serif;
-            min-width: 280px;
+            min-width: 350px;
         }
         
         .popup-header {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
         }
         
         .popup-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
             object-fit: cover;
-            border: 2px solid #f0f0f0;
+            border: 3px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .popup-image:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
         .popup-image.placeholder {
@@ -278,7 +443,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 24px;
+            font-size: 40px;
         }
         
         .popup-title {
@@ -394,18 +559,50 @@
             }
             
             .custom-popup {
-                min-width: 250px;
+                min-width: 300px;
             }
             
             .popup-header {
                 flex-direction: column;
                 text-align: center;
-                gap: 8px;
+                gap: 12px;
             }
             
             .popup-image {
-                width: 50px;
-                height: 50px;
+                width: 100px;
+                height: 100px;
+                align-self: center;
+            }
+            
+            .popup-image.placeholder {
+                font-size: 30px;
+            }
+            
+            /* Mobile modal adjustments */
+            .modal-content {
+                max-width: 95%;
+                max-height: 95%;
+            }
+            
+            .modal-image {
+                max-height: 70vh;
+            }
+            
+            .modal-header {
+                padding: 12px 15px;
+            }
+            
+            .modal-title {
+                font-size: 14px;
+            }
+            
+            .modal-info {
+                padding: 15px;
+            }
+            
+            .modal-info-row {
+                font-size: 13px;
+                margin-bottom: 6px;
             }
         }
     </style>
@@ -455,6 +652,32 @@
         <div class="loading" id="loading" style="display: none;">
             <div class="loading-spinner"></div>
             <div>กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">รูปร้านค้า</h3>
+                <button class="close-modal" onclick="closeImageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="image-container">
+                <img id="modalImage" src="" alt="รูปร้านค้า" class="modal-image">
+            </div>
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomImage(1.2)" title="ซูมเข้า">+</button>
+                <button class="zoom-btn" onclick="zoomImage(0.8)" title="ซูมออก">-</button>
+                <button class="zoom-btn" onclick="resetZoom()" title="รีเซ็ตซูม">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+            </div>
+            <div class="zoom-info">100%</div>
+            <div class="modal-info" id="modalInfo">
+                <!-- Info will be populated by JavaScript -->
+            </div>
         </div>
     </div>
 
@@ -651,8 +874,20 @@
             // Create image element or placeholder
             // Priority: visit photo > store cover image > placeholder
             const imageUrl = visit.store_image || visit.store_cover_image;
+            const storeInfo = {
+                name: visit.store_name,
+                agent: visit.agent_name || visit.sale_agent,
+                visitDateTime: visit.visit_datetime,
+                address: visit.store_address,
+                phone: visit.customer_phone
+            };
+            
+            const imageClickHandler = imageUrl ? 
+                `onclick="showImageModal('${imageUrl}', ${JSON.stringify(storeInfo).replace(/"/g, '&quot;')})"` : '';
+            
             const imageHtml = imageUrl ? 
-                `<img src="${imageUrl}" alt="รูปร้าน" class="popup-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                `<img src="${imageUrl}" alt="รูปร้าน" class="popup-image" ${imageClickHandler} 
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                  <div class="popup-image placeholder" style="display: none;"><i class="fas fa-store"></i></div>` :
                 `<div class="popup-image placeholder"><i class="fas fa-store"></i></div>`;
             
@@ -688,6 +923,10 @@
                     <div class="visit-type ${visit.visit_type === 'New Store' ? 'new-store' : 'check-in'}">
                         ${visit.visit_type === 'New Store' ? 'ร้านใหม่' : 'เช็คอิน'}
                     </div>
+                    ${imageUrl ? `
+                    <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 8px;">
+                        <i class="fas fa-expand"></i> คลิกที่รูปเพื่อดูขนาดใหญ่
+                    </div>` : ''}
                 </div>
             `;
             
@@ -769,7 +1008,7 @@
             });
         }
         
-                // Show routes for each agent
+        // Show routes for each agent
         async function showRoutes() {
             routesLayer.clearLayers();
             activeRoutes = [];
@@ -959,7 +1198,7 @@
             routesLayer.addLayer(polyline);
         }
          
-                 // Clear all routes
+        // Clear all routes
         function clearAllRoutes() {
             // Remove all routing controls
             activeRoutes.forEach(routingControl => {
@@ -977,6 +1216,182 @@
             routeBtn.innerHTML = '<i class="fas fa-route"></i> แสดงเส้นทาง';
             routeBtn.style.background = '#28a745';
             routeLegend.style.display = 'none';
+        }
+        
+        // Show image modal with zoom functionality
+        function showImageModal(imageUrl, storeInfo) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalInfo = document.getElementById('modalInfo');
+            
+            modalImage.src = imageUrl;
+            modalTitle.textContent = storeInfo.name || 'รูปร้านค้า';
+            
+            // Reset zoom
+            modalImage.style.transform = 'scale(1) translate(0px, 0px)';
+            modalImage.dataset.scale = '1';
+            modalImage.dataset.translateX = '0';
+            modalImage.dataset.translateY = '0';
+            
+            // Populate modal info
+            const visitDate = new Date(storeInfo.visitDateTime);
+            const formattedDate = visitDate.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const formattedTime = visitDate.toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            modalInfo.innerHTML = `
+                <div class="modal-info-row">
+                    <i class="fas fa-store"></i>
+                    <strong>${storeInfo.name || 'ไม่ระบุชื่อร้าน'}</strong>
+                </div>
+                <div class="modal-info-row">
+                    <i class="fas fa-user"></i>
+                    <span>${storeInfo.agent || 'ไม่ระบุ Sale Agent'}</span>
+                </div>
+                <div class="modal-info-row">
+                    <i class="fas fa-calendar"></i>
+                    <span>${formattedDate}</span>
+                </div>
+                <div class="modal-info-row">
+                    <i class="fas fa-clock"></i>
+                    <span>${formattedTime}</span>
+                </div>
+                ${storeInfo.address ? `
+                <div class="modal-info-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>${storeInfo.address}</span>
+                </div>` : ''}
+                ${storeInfo.phone ? `
+                <div class="modal-info-row">
+                    <i class="fas fa-phone"></i>
+                    <span>${storeInfo.phone}</span>
+                </div>` : ''}
+                <div class="modal-info-row" style="border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; font-size: 11px; color: #999;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>ใช้ปุ่ม +/- เพื่อซูม, ลากเพื่อเลื่อนดูรูป</span>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Initialize drag functionality
+            initImageDrag();
+        }
+        
+        // Zoom functionality
+        function zoomImage(factor) {
+            const modalImage = document.getElementById('modalImage');
+            const currentScale = parseFloat(modalImage.dataset.scale || 1);
+            const newScale = Math.max(0.5, Math.min(5, currentScale * factor));
+            
+            modalImage.dataset.scale = newScale;
+            modalImage.style.transform = `scale(${newScale}) translate(${modalImage.dataset.translateX || 0}px, ${modalImage.dataset.translateY || 0}px)`;
+            
+            // Update zoom info
+            updateZoomInfo(newScale);
+            
+            // Add/remove zoomed class
+            if (newScale > 1) {
+                modalImage.classList.add('zoomed');
+            } else {
+                modalImage.classList.remove('zoomed');
+            }
+        }
+        
+        function resetZoom() {
+            const modalImage = document.getElementById('modalImage');
+            modalImage.dataset.scale = '1';
+            modalImage.dataset.translateX = '0';
+            modalImage.dataset.translateY = '0';
+            modalImage.style.transform = 'scale(1) translate(0px, 0px)';
+            modalImage.classList.remove('zoomed');
+            updateZoomInfo(1);
+        }
+        
+        function updateZoomInfo(scale) {
+            const zoomInfo = document.querySelector('.zoom-info');
+            if (zoomInfo) {
+                zoomInfo.textContent = `${Math.round(scale * 100)}%`;
+            }
+        }
+        
+        // Pan functionality
+        let isDragging = false;
+        let startX, startY;
+        
+        function initImageDrag() {
+            const modalImage = document.getElementById('modalImage');
+            
+            modalImage.addEventListener('mousedown', function(e) {
+                const scale = parseFloat(modalImage.dataset.scale || 1);
+                if (scale <= 1) return; // Only allow dragging when zoomed
+                
+                isDragging = true;
+                startX = e.clientX - (parseFloat(modalImage.dataset.translateX) || 0);
+                startY = e.clientY - (parseFloat(modalImage.dataset.translateY) || 0);
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const translateX = e.clientX - startX;
+                const translateY = e.clientY - startY;
+                
+                modalImage.dataset.translateX = translateX;
+                modalImage.dataset.translateY = translateY;
+                
+                const scale = modalImage.dataset.scale || 1;
+                modalImage.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            // Touch events for mobile
+            modalImage.addEventListener('touchstart', function(e) {
+                const scale = parseFloat(modalImage.dataset.scale || 1);
+                if (scale <= 1) return;
+                
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX - (parseFloat(modalImage.dataset.translateX) || 0);
+                startY = touch.clientY - (parseFloat(modalImage.dataset.translateY) || 0);
+                e.preventDefault();
+            });
+            
+            modalImage.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                
+                const touch = e.touches[0];
+                const translateX = touch.clientX - startX;
+                const translateY = touch.clientY - startY;
+                
+                modalImage.dataset.translateX = translateX;
+                modalImage.dataset.translateY = translateY;
+                
+                const scale = modalImage.dataset.scale || 1;
+                modalImage.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+                e.preventDefault();
+            });
+            
+            modalImage.addEventListener('touchend', function() {
+                isDragging = false;
+            });
+        }
+        
+        // Close image modal
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
         }
         
         // Utility functions
@@ -1028,6 +1443,19 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && (e.target.id === 'agent-select' || e.target.type === 'date')) {
                 loadVisits();
+            }
+            
+            // Close modal with Escape key
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('imageModal');
+            if (e.target === modal) {
+                closeImageModal();
             }
         });
     </script>

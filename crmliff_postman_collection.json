@@ -1,4 +1,300 @@
 {
+  "info": {
+    "_postman_id": "crmliff-api-collection",
+    "name": "CRM LIFF API Collection",
+    "description": "Postman collection สำหรับทดสอบ CRM LIFF API โดยยึดตามการใช้งานจริงในส่วน www/ ของแอป\n\nคำแนะนำการใช้งานอย่างย่อ:\n- เริ่มจาก Health Check → Get Store Types → Verify Agent หรือ Create Sale Agent\n- อัปโหลดรูปด้วย Upload Photo (Custom) เพื่อได้ file_url สำหรับใช้กับ Create Store/Check-in\n- เมื่อสร้างร้านแล้ว ระบบจะบันทึกตัวแปร store_id ไว้ให้อัตโนมัติ ใช้กับ Check-in และ Store Detail/History ได้\n\nตัวแปรที่ใช้:\n- base_url: URL ของ Frappe site เช่น http://crmliff.localhost\n- file_url: ค่า URL รูปจาก Upload Photo (บันทึกใน Tests)\n- store_id: เลือกร้านล่าสุด (บันทึกใน Tests ของ Create Store)\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.health_check",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.health_check"]
+        },
+        "description": "ตรวจสอบสถานะ API ตามที่ www ใช้ ก่อนทำงานอื่นๆ"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Store Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_store_types",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.get_store_types"]
+        },
+        "description": "ดึงรายการประเภทร้าน ใช้แสดงตัวเลือกใน liff-app และ store-detail"
+      },
+      "response": []
+    },
+    {
+      "name": "Verify Agent (GET)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Has message wrapper\", () => pm.expect(json).to.have.property('message'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.verify_agent?agent_code=S001",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.verify_agent"],
+          "query": [
+            {"key": "agent_code", "value": "S001"}
+          ]
+        },
+        "description": "ตรวจสอบรหัสพนักงาน (ใน www เรียกแบบ GET)\n- กรอก agent_code เช่น S001\n- ผลลัพธ์ใช้เพื่อยืนยันก่อนสร้าง/เช็คอิน หรือแมป LINE UID (หน้า dev-tools)"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Sale Agent",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "if (json.message && json.message.success) {",
+              "  pm.globals.set('agent_name_doc', json.message.data.name);",
+              "}",
+              "pm.test(\"Created\", () => pm.expect(json.message).to.have.property('success'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_code\": \"S001\",\n  \"agent_name\": \"สมชาย ใจดี\",\n  \"territory\": \"Bangkok\",\n  \"line_uid\": \"\",\n  \"is_active\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.create_sale_agent",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.create_sale_agent"]
+        },
+        "description": "สร้างพนักงานเซลส์ใหม่ (ใช้ทดสอบหรือเตรียมข้อมูล)\n- www ไม่ได้เรียก endpoint นี้ตรงๆ แต่มีประโยชน์ตอนตั้งค่าข้อมูลเริ่มต้น"
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Photo (Custom)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "const url = json.file_url || (json.message && json.message.file_url);",
+              "if (url) pm.globals.set('file_url', url);",
+              "pm.test(\"file_url exists\", () => pm.expect(url).to.be.a('string'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Accept", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": ""}
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.upload_photo",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.upload_photo"]
+        },
+        "description": "อัปโหลดรูปภาพแบบเดียวกับ www (มี fallback จาก upload_file)\n- แนบไฟล์ใน form-data key=\"file\"\n- เมื่อสำเร็จ จะบันทึกตัวแปร file_url ให้อัตโนมัติ ใช้กับ create/check-in"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Store",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "if (json.message && json.message.success) {",
+              "  pm.globals.set('visit_id', json.message.data.visit_id);",
+              "  pm.globals.set('store_id', json.message.data.store_id);",
+              "}",
+              "pm.test(\"Created store_id\", () => pm.expect(pm.globals.get('store_id')).to.be.ok);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_code\": \"S001\",\n  \"location_lat\": 13.7563,\n  \"location_lng\": 100.5018,\n  \"address\": \"123 Test Street, Bangkok\",\n  \"store_type\": \"FOOD\",\n  \"store_name\": \"ร้านทดสอบจาก Postman\",\n  \"store_description\": \"สร้างร้านพร้อมรูปจาก file_url\",\n  \"contact_name\": \"คุณทดสอบ\",\n  \"contact_phone\": \"+66812345678\",\n  \"cover_image\": \"{{file_url}}\",\n  \"photos\": [ { \"image\": \"{{file_url}}\", \"caption\": \"รูปหน้าร้าน\" } ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.create_store",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.create_store"]
+        },
+        "description": "สร้างร้านใหม่ตาม flow ใน liff-app\n- แนะนำให้อัปโหลดรูปก่อน (Upload Photo) เพื่อมี {{file_url}} ใช้เป็น cover_image/photos\n- เมื่อสำเร็จ จะบันทึก store_id, visit_id อัตโนมัติ"
+      },
+      "response": []
+    },
+    {
+      "name": "Check-in Store",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "if (!pm.globals.get('store_id')) { console.warn('No store_id. Run Create Store first.'); }",
+              "if (!pm.globals.get('file_url')) { console.warn('No file_url. Run Upload Photo first.'); }"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Checkin ok\", () => pm.expect(json).to.have.property('message'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agent_code\": \"S001\",\n  \"store_id\": \"{{store_id}}\",\n  \"location_lat\": 13.7565,\n  \"location_lng\": 100.5020,\n  \"remark\": \"เช็คอินจาก Postman\",\n  \"photos\": [ { \"image\": \"{{file_url}}\", \"caption\": \"การเช็คอิน\" } ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.checkin_store",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.checkin_store"]
+        },
+        "description": "เช็คอินร้านแบบเดียวกับ list-store/store-detail\n- ต้องมี store_id (จาก Create Store) และรูป (จาก Upload Photo)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Agent Stores",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_stores?agent_code=S001",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.get_agent_stores"],
+          "query": [
+            {"key": "agent_code", "value": "S001"}
+          ]
+        },
+        "description": "ดึงรายการร้านของ agent ตามที่หน้า list-store ใช้\nหมายเหตุ: ที่ฝั่ง www ส่งค่าเป็นชื่อเอกสาร (DocName) ของ Agent ไม่ใช่ agent_code เสมอไป\n- ถ้า Verify Agent คืนค่า data.name ให้ลองใช้ค่านั้นแทน S001"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Store Detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_store_detail?store_id={{store_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.get_store_detail"],
+          "query": [
+            {"key": "store_id", "value": "{{store_id}}"}
+          ]
+        },
+        "description": "รายละเอียดร้าน ตามที่หน้า store-detail ใช้"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Store Checkin History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_store_checkin_history?store_id={{store_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.get_store_checkin_history"],
+          "query": [
+            {"key": "store_id", "value": "{{store_id}}"}
+          ]
+        },
+        "description": "ประวัติการเช็คอิน (timeline) ตามที่หน้า store-detail ใช้"
+      },
+      "response": []
+    },
+    {
+      "name": "Update Store",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"store_id\": \"{{store_id}}\",\n  \"store_name\": \"ชื่อร้านที่อัปเดตจาก Postman\",\n  \"store_description\": \"คำอธิบายที่อัปเดต\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/method/crmliff.api.liff_api.update_store",
+          "host": ["{{base_url}}"],
+          "path": ["api", "method", "crmliff.api.liff_api.update_store"]
+        },
+        "description": "อัปเดตร้าน ตามที่หน้า store-detail ใช้"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://crmliff.localhost", "type": "string"}
+  ]
+}
+
+{
 	"info": {
 		"_postman_id": "crmliff-api-collection",
 		"name": "CRM LIFF API Collection",

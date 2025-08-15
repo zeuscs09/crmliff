@@ -125,68 +125,151 @@ def get_agent_info(line_uid):
         }
 
 
-@frappe.whitelist(allow_guest=True)
-def submit_store_visit(**kwargs):
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_sale_agent():
     """
-    API: POST /api/method/crmliff.api.liff_api.submit_store_visit
-    บันทึกข้อมูลการเข้าเยี่ยมลูกค้า
-    
-    Expected payload:
+    API: POST /api/method/crmliff.api.liff_api.create_sale_agent
+    สร้างพนักงานเซลส์ใหม่ (CLIFF Sale Agent)
+
+    Expected JSON body:
     {
-        "line_uid": "Uxxxxxxxxxxxxxx",
-        "store_name": "ร้านแม่สมศรี",
-        "store_type": "store-type-001",
-        "store_description": "อยู่ริมถนน ใกล้เซเว่น",
-        "contact_name": "คุณสมศรี",
-        "contact_phone": "0891234567",
-        "location": {
-            "lat": 13.7563,
-            "lng": 100.5018
-        },
-        "images": [
-            {
-                "base64": "data:image/jpeg;base64,...",
-                "caption": "หน้าร้าน"
-            }
-        ]
+        "agent_code": "S001",            // required
+        "agent_name": "สมชาย ใจดี",     // required
+        "territory": "Bangkok",          // optional
+        "line_uid": "Uxxxxxxxxxxxxx",    // optional
+        "is_active": 1                    // optional (default 1)
     }
     """
     try:
-        # รับข้อมูลทั้งหมดจาก kwargs
-        data = kwargs
-        
-        # ตรวจสอบข้อมูลจำเป็น
-        required_fields = ['line_uid', 'store_type', 'location', 'images']
-        for field in required_fields:
-            if field not in data or not data[field]:
-                frappe.throw(f"Field '{field}' is required")
-        
-        # ตรวจสอบ location format
-        location = data['location']
-        if not isinstance(location, dict) or 'lat' not in location or 'lng' not in location:
-            frappe.throw("Invalid location format. Expected: {lat: float, lng: float}")
-        
-        # ตรวจสอบ images format
-        images = data['images']
-        if not isinstance(images, list) or len(images) == 0:
-            frappe.throw("At least one image is required")
-        
-        # เรียก function submit_visit
-        result = submit_visit(data)
-        
+        # Read JSON body
+        request_data = frappe.request.get_data()
+        try:
+            data = json.loads(request_data)
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "Invalid JSON format",
+                "message": "ข้อมูล JSON ไม่ถูกต้อง"
+            }
+
+        agent_code = (data.get("agent_code") or "").strip()
+        agent_name = (data.get("agent_name") or "").strip()
+        territory = (data.get("territory") or "").strip()
+        line_uid = (data.get("line_uid") or "").strip()
+        is_active = data.get("is_active", 1)
+
+        # Required validation
+        if not agent_code:
+            return {"success": False, "error": "agent_code is required"}
+        if not agent_name:
+            return {"success": False, "error": "agent_name is required"}
+
+        # Prevent duplicate (by name or by agent_code field)
+        if frappe.db.exists("CLIFF Sale Agent", agent_code) or frappe.db.exists(
+            "CLIFF Sale Agent", {"agent_code": agent_code}
+        ):
+            return {
+                "success": False,
+                "error": f"Agent '{agent_code}' already exists"
+            }
+
+        # Create document
+        agent_doc = frappe.get_doc({
+            "doctype": "CLIFF Sale Agent",
+            "agent_code": agent_code,
+            "agent_name": agent_name,
+            "territory": territory or None,
+            "line_uid": line_uid or None,
+            "is_active": 1 if int(is_active) in (1, True) else 0
+        })
+
+        # Save ignoring permissions to support public onboarding via LIFF tools
+        agent_doc.insert(ignore_permissions=True)
+
         return {
             "success": True,
-            "data": result,
-            "message": "Store visit submitted successfully"
+            "data": {
+                "name": agent_doc.name,
+                "agent_code": agent_doc.agent_code,
+                "agent_name": agent_doc.agent_name,
+                "territory": agent_doc.territory,
+                "line_uid": agent_doc.line_uid,
+                "is_active": agent_doc.is_active,
+            },
+            "message": "สร้างพนักงานเซลส์สำเร็จ"
         }
-        
+
     except Exception as e:
-        frappe.log_error(f"Error submitting store visit: {str(e)}")
+        frappe.log_error(f"Error creating sale agent: {str(e)}")
         return {
             "success": False,
             "error": str(e),
-            "message": "Failed to submit store visit"
+            "message": "เกิดข้อผิดพลาดในการสร้างพนักงานเซลส์"
         }
+
+
+# @frappe.whitelist(allow_guest=True)
+# def submit_store_visit(**kwargs):
+#     """
+#     API: POST /api/method/crmliff.api.liff_api.submit_store_visit
+#     บันทึกข้อมูลการเข้าเยี่ยมลูกค้า
+    
+#     Expected payload:
+#     {
+#         "line_uid": "Uxxxxxxxxxxxxxx",
+#         "store_name": "ร้านแม่สมศรี",
+#         "store_type": "store-type-001",
+#         "store_description": "อยู่ริมถนน ใกล้เซเว่น",
+#         "contact_name": "คุณสมศรี",
+#         "contact_phone": "0891234567",
+#         "location": {
+#             "lat": 13.7563,
+#             "lng": 100.5018
+#         },
+#         "images": [
+#             {
+#                 "base64": "data:image/jpeg;base64,...",
+#                 "caption": "หน้าร้าน"
+#             }
+#         ]
+#     }
+#     """
+#     try:
+#         # รับข้อมูลทั้งหมดจาก kwargs
+#         data = kwargs
+        
+#         # ตรวจสอบข้อมูลจำเป็น
+#         required_fields = ['line_uid', 'store_type', 'location', 'images']
+#         for field in required_fields:
+#             if field not in data or not data[field]:
+#                 frappe.throw(f"Field '{field}' is required")
+        
+#         # ตรวจสอบ location format
+#         location = data['location']
+#         if not isinstance(location, dict) or 'lat' not in location or 'lng' not in location:
+#             frappe.throw("Invalid location format. Expected: {lat: float, lng: float}")
+        
+#         # ตรวจสอบ images format
+#         images = data['images']
+#         if not isinstance(images, list) or len(images) == 0:
+#             frappe.throw("At least one image is required")
+        
+#         # เรียก function submit_visit
+#         result = submit_visit(data)
+        
+#         return {
+#             "success": True,
+#             "data": result,
+#             "message": "Store visit submitted successfully"
+#         }
+        
+#     except Exception as e:
+#         frappe.log_error(f"Error submitting store visit: {str(e)}")
+#         return {
+#             "success": False,
+#             "error": str(e),
+#             "message": "Failed to submit store visit"
+#         }
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
