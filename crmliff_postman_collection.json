@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "crmliff-api-collection",
     "name": "CRM LIFF API Collection",
-    "description": "Postman collection สำหรับทดสอบ CRM LIFF API โดยยึดตามการใช้งานจริงในส่วน www/ ของแอป\n\nคำแนะนำการใช้งานอย่างย่อ:\n- เริ่มจาก Health Check → Get Store Types → Verify Agent หรือ Create Sale Agent\n- อัปโหลดรูปด้วย Upload Photo (Custom) เพื่อได้ file_url สำหรับใช้กับ Create Store/Check-in\n- เมื่อสร้างร้านแล้ว ระบบจะบันทึกตัวแปร store_id ไว้ให้อัตโนมัติ ใช้กับ Check-in และ Store Detail/History ได้\n\nตัวแปรที่ใช้:\n- base_url: URL ของ Frappe site เช่น http://crmliff.localhost\n- file_url: ค่า URL รูปจาก Upload Photo (บันทึกใน Tests)\n- store_id: เลือกร้านล่าสุด (บันทึกใน Tests ของ Create Store)\n",
+    "description": "Postman collection สำหรับทดสอบ CRM LIFF API โดยยึดตามการใช้งานจริงในส่วน www/ ของแอป และเพิ่ม Standard REST CRUD ของแต่ละ DocType ด้วย token header.\n\nคำแนะนำการใช้งานอย่างย่อ:\n- เริ่มจาก Health Check → Get Store Types → Verify Agent หรือ Create Sale Agent\n- อัปโหลดรูปด้วย Upload Photo (Custom) เพื่อได้ file_url สำหรับใช้กับ Create Store/Check-in\n- เมื่อสร้างร้านแล้ว ระบบจะบันทึกตัวแปร store_id ไว้ให้อัตโนมัติ ใช้กับ Check-in และ Store Detail/History ได้\n\nโฟลเดอร์ Standard REST (token):\n- ใช้ Frappe Standard REST: /api/resource/<DocType>\n- ใส่หัวข้อ Authorization: token {{api_key}}:{{api_secret}}\n\nตัวแปรที่ใช้:\n- base_url: URL ของ Frappe site เช่น http://crmliff.localhost\n- api_key, api_secret: Token สำหรับ Standard REST\n- file_url: ค่า URL รูปจาก Upload Photo (บันทึกใน Tests)\n- store_id: เลือกร้านล่าสุด (บันทึกใน Tests ของ Create Store)\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -287,563 +287,347 @@
         "description": "อัปเดตร้าน ตามที่หน้า store-detail ใช้"
       },
       "response": []
+    },
+    {
+      "name": "Standard REST (token)",
+      "description": "Frappe Standard REST: ใช้ Authorization header: token {{api_key}}:{{api_secret}}",
+      "item": [
+        {
+          "name": "CLIFF Store",
+          "item": [
+            {
+              "name": "List Stores",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                },
+                "description": "รายการ CLIFF Store"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Store",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store/{{store_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store", "{{store_id}}"]
+                },
+                "description": "ดึงรายละเอียดร้านด้วย Standard REST"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Store (REST)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.name) pm.globals.set('store_id', json.data.name);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"},
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"store_name\": \"ร้านจาก REST\",\n  \"location_lat\": 13.75,\n  \"location_lng\": 100.50,\n  \"status\": \"Active\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store"]
+                },
+                "description": "สร้างร้านด้วย Standard REST (ค่าตัวอย่างเป็นขั้นต่ำที่ผ่าน validate)"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Store (REST)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"},
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"store_description\": \"อัปเดตผ่าน REST\",\n  \"contact_name\": \"ผู้ติดต่อ\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store/{{store_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store", "{{store_id}}"]
+                },
+                "description": "อัปเดตร้านด้วย Standard REST"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Store (REST)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store/{{store_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store", "{{store_id}}"]
+                },
+                "description": "ลบร้านด้วย Standard REST"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CLIFF Sale Agent",
+          "item": [
+            {
+              "name": "List Agents",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Sale%20Agent?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Sale Agent"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Agent",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Sale%20Agent/{{agent_name_doc}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Sale Agent", "{{agent_name_doc}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Agent (REST)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();",
+                      "if (json.data && json.data.name) pm.globals.set('agent_name_doc', json.data.name);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"},
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"agent_code\": \"S100\",\n  \"agent_name\": \"Agent REST\",\n  \"is_active\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Sale%20Agent",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Sale Agent"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Agent (REST)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"},
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"territory\": \"Bangkok\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Sale%20Agent/{{agent_name_doc}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Sale Agent", "{{agent_name_doc}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Agent (REST)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Sale%20Agent/{{agent_name_doc}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Sale Agent", "{{agent_name_doc}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CLIFF Store Type",
+          "item": [
+            {
+              "name": "List Store Types",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store%20Type?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store Type"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Store Type (REST)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"},
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"store_type_code\": \"RETAILX\",\n  \"store_type_name\": \"Retail X\",\n  \"is_active\": 1,\n  \"sort_order\": 99\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store%20Type",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store Type"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CLIFF Customer Store Visit",
+          "description": "หมายเหตุ: เป็นเอกสารที่มี child table (photos) และ validation ค่อนข้างเคร่งครัด\nการสร้าง/แก้ไขผ่าน REST ต้องส่งภาพใน photos ผ่าน parent เสมอ",
+          "item": [
+            {
+              "name": "List Visits",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Customer%20Store%20Visit?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Customer Store Visit"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CLIFF Store Visit Photo (child table)",
+          "description": "เป็น Child Table: สร้าง/แก้ไข/ลบ ผ่านเอกสารแม่ (CLIFF Customer Store Visit) เท่านั้น",
+          "item": [
+            {
+              "name": "List Photos (read-only)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store%20Visit%20Photo?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store Visit Photo"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "CLIFF Store Address",
+          "description": "ถ้าเป็น Child ของ CLIFF Store ให้แก้ไขผ่านเอกสารแม่",
+          "item": [
+            {
+              "name": "List Store Addresses",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "token {{api_key}}:{{api_secret}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/resource/CLIFF%20Store%20Address?limit_page_length=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "resource", "CLIFF Store Address"],
+                  "query": [
+                    {"key": "limit_page_length", "value": "20"}
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
-    {"key": "base_url", "value": "http://crmliff.localhost", "type": "string"}
+    {"key": "base_url", "value": "http://crmliff.localhost", "type": "string"},
+    {"key": "api_key", "value": "", "type": "string"},
+    {"key": "api_secret", "value": "", "type": "string"}
   ]
-}
-
-{
-	"info": {
-		"_postman_id": "crmliff-api-collection",
-		"name": "CRM LIFF API Collection",
-		"description": "Complete API collection for CRM LIFF application with LINE integration.\n\n🚀 **NEW FEATURES:**\n• Separate APIs for creating stores and checking in\n• Enhanced response validation\n• Base64 image support\n\n📋 **TESTING ORDER:**\n1. Health Check\n2. Get Store Types\n3. Verify Agent\n4. Create Store (saves store_id to globals)\n5. Check-in Store (uses saved store_id)\n6. Get Agent Stores\n\n⚙️ **SETUP:**\nSet base_url variable to your Frappe site URL (e.g., http://crmliff.localhost)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Health Check",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Response has success field\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('success');",
-							"    pm.expect(jsonData.success).to.be.true;",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.health_check",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.health_check"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Store Types",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Response has store types data\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('success');",
-							"    pm.expect(jsonData).to.have.property('data');",
-							"    pm.expect(jsonData.data).to.be.an('array');",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_store_types",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.get_store_types"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Verify Agent S001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Agent verification successful\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('success');",
-							"    pm.expect(jsonData).to.have.property('data');",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "agent_code",
-							"value": "S001",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.verify_agent",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.verify_agent"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Verify Agent T001",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "agent_code",
-							"value": "T001",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.verify_agent",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.verify_agent"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Link LINE Account - S001",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "agent_code",
-							"value": "S001",
-							"type": "text"
-						},
-						{
-							"key": "line_uid",
-							"value": "U123456789abcdef",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.link_line_account",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.link_line_account"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Agent Info by LINE UID",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_info?line_uid=U123456789abcdef",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.get_agent_info"
-					],
-					"query": [
-						{
-							"key": "line_uid",
-							"value": "U123456789abcdef"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create Store",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Store created successfully\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('message');",
-							"    if (jsonData.message && jsonData.message.success) {",
-							"        pm.expect(jsonData.message).to.have.property('data');",
-							"        pm.expect(jsonData.message.data).to.have.property('visit_id');",
-							"        pm.expect(jsonData.message.data).to.have.property('store_id');",
-							"        ",
-							"        // Store values for next requests",
-							"        pm.globals.set('visit_id', jsonData.message.data.visit_id);",
-							"        pm.globals.set('store_id', jsonData.message.data.store_id);",
-							"    }",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"agent_code\": \"S001\",\n    \"location_lat\": 13.7563,\n    \"location_lng\": 100.5018,\n    \"address\": \"123 Test Street, Bangkok\",\n    \"store_type\": \"FOOD\",\n    \"store_name\": \"ร้านทดสอบ Postman\",\n    \"store_description\": \"ร้านทดสอบสำหรับ API testing\",\n    \"contact_name\": \"คุณทดสอบ\",\n    \"contact_phone\": \"+66812345678\",\n    \"cover_image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n    \"photos\": [\n        {\n            \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n            \"caption\": \"รูปหน้าร้าน\"\n        }\n    ]\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.create_store",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.create_store"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check-in Store",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"// Ensure we have a store_id from previous Create Store request",
-							"if (!pm.globals.get('store_id')) {",
-							"    console.log('Warning: No store_id found. Please run \"Create Store\" first.');",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Check-in successful\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('message');",
-							"    if (jsonData.message && jsonData.message.success) {",
-							"        pm.expect(jsonData.message).to.have.property('data');",
-							"        pm.expect(jsonData.message.data).to.have.property('visit_id');",
-							"        pm.expect(jsonData.message.data).to.have.property('store_id');",
-							"        pm.expect(jsonData.message.data).to.have.property('store_name');",
-							"        console.log('Check-in successful for store:', jsonData.message.data.store_name);",
-							"    }",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"agent_code\": \"S001\",\n    \"store_id\": \"{{store_id}}\",\n    \"location_lat\": 13.7565,\n    \"location_lng\": 100.5020,\n    \"photos\": [\n        {\n            \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=\",\n            \"caption\": \"การเช็คอิน\"\n        }\n    ]\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.checkin_store",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.checkin_store"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Agent Stores - S001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Response has stores data\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    pm.expect(jsonData).to.have.property('message');",
-							"    if (jsonData.message && jsonData.message.success) {",
-							"        pm.expect(jsonData.message).to.have.property('data');",
-							"        pm.expect(jsonData.message.data).to.have.property('stores');",
-							"        pm.expect(jsonData.message.data.stores).to.be.an('array');",
-							"        console.log('Found', jsonData.message.data.stores.length, 'stores for agent S001');",
-							"    }",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_stores?agent_code=S001",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.get_agent_stores"
-					],
-					"query": [
-						{
-							"key": "agent_code",
-							"value": "S001"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Agent Stores - T001",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_agent_stores?agent_code=T001",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.get_agent_stores"
-					],
-					"query": [
-						{
-							"key": "agent_code",
-							"value": "T001"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Visits Summary - S001",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.get_visits_summary?agent_code=S001",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.get_visits_summary"
-					],
-					"query": [
-						{
-							"key": "agent_code",
-							"value": "S001"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Submit Store Visit (Alternative API)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "line_uid",
-							"value": "U123456789abcdef",
-							"type": "text"
-						},
-						{
-							"key": "store_name",
-							"value": "ร้านทดสอบ Alternative API",
-							"type": "text"
-						},
-						{
-							"key": "store_type",
-							"value": "RETAIL001",
-							"type": "text"
-						},
-						{
-							"key": "store_description",
-							"value": "ทดสอบ submit_store_visit API",
-							"type": "text"
-						},
-						{
-							"key": "contact_name",
-							"value": "คุณทดสอบ",
-							"type": "text"
-						},
-						{
-							"key": "contact_phone",
-							"value": "0887654321",
-							"type": "text"
-						},
-						{
-							"key": "location",
-							"value": "{\"lat\": 13.7563, \"lng\": 100.5018}",
-							"type": "text"
-						},
-						{
-							"key": "images",
-							"value": "[{\"base64\": \"data:image/jpeg;base64,test\", \"caption\": \"หน้าร้าน\"}]",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/method/crmliff.api.liff_api.submit_store_visit",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"method",
-						"crmliff.api.liff_api.submit_store_visit"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://crmliff.localhost",
-			"type": "string"
-		}
-	]
 } 
