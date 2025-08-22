@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2025-08-22 09:28:22.205472",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "province",
+  "amphoe",
+  "tambol",
+  "zipcode",
+  "full_address"
+ ],
+ "fields": [
+  {
+   "fieldname": "province",
+   "fieldtype": "Data",
+   "label": "Province"
+  },
+  {
+   "fieldname": "amphoe",
+   "fieldtype": "Data",
+   "label": "Amphoe"
+  },
+  {
+   "fieldname": "tambol",
+   "fieldtype": "Data",
+   "label": "Tambol"
+  },
+  {
+   "fieldname": "zipcode",
+   "fieldtype": "Data",
+   "label": "Zipcode"
+  },
+  {
+   "fieldname": "full_address",
+   "fieldtype": "Data",
+   "label": "Full Address"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-22 09:29:40.534196",
+ "modified_by": "Administrator",
+ "module": "Crmliff",
+ "name": "Thai Address",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
