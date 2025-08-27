@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "store",
+  "address_name",
   "location_lat",
   "location_lng",
   "address",
@@ -57,11 +58,16 @@
    "fieldname": "zipcode",
    "fieldtype": "Data",
    "label": "Zipcode"
+  },
+  {
+   "fieldname": "address_name",
+   "fieldtype": "Data",
+   "label": "Address Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-22 08:03:35.671960",
+ "modified": "2025-08-27 08:29:09.721310",
  "modified_by": "Administrator",
  "module": "Crmliff",
  "name": "CLIFF Store Address",
